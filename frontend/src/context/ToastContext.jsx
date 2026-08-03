@@ -113,7 +113,7 @@ export const ToastProvider = ({ children }) => {
         {toasts.map((t) => (
           <div key={t.id} className={`toast-item toast-${t.type}`}>
             <img 
-              src="/logo.png" // User's company logo (assumes logo.png is in public folder)
+              src="/companylogo.jpg" // User's company logo
               alt="Logo" 
               className="toast-logo"
               onError={(e) => {

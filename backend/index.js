@@ -6,8 +6,8 @@ const { initMongo } = require('./src/config/database');
 
 const { login, getMe } = require('./src/controllers/authController');
 const { getAllUsers, createUser, updateUser, deleteUser } = require('./src/controllers/usersController');
-const { getTripMis, createTripMis, updateTripMis, deleteTripMis } = require('./src/controllers/tripMisController');
-const { getVendorMis, createVendorMis, updateVendorMis, deleteVendorMis } = require('./src/controllers/vendorMisController');
+const { getTripMis, createTripMis, updateTripMis, deleteTripMis, addTripMisRemark } = require('./src/controllers/tripMisController');
+const { getVendorMis, createVendorMis, updateVendorMis, deleteVendorMis, addVendorMisRemark } = require('./src/controllers/vendorMisController');
 const { getDashboardStats } = require('./src/controllers/dashboardController');
 const { authenticateToken, requireAdmin } = require('./src/middleware/auth');
 
@@ -82,12 +82,14 @@ app.get('/api/dashboard/stats', authenticateToken, getDashboardStats);
 app.get('/api/trip-mis', authenticateToken, getTripMis);
 app.post('/api/trip-mis', authenticateToken, createTripMis);
 app.put('/api/trip-mis/:id', authenticateToken, updateTripMis);
+app.post('/api/trip-mis/:id/remarks', authenticateToken, addTripMisRemark);
 app.delete('/api/trip-mis/:id', authenticateToken, deleteTripMis);
 
 // Vendor Vehicle MIS
 app.get('/api/vendor-mis', authenticateToken, getVendorMis);
 app.post('/api/vendor-mis', authenticateToken, createVendorMis);
 app.put('/api/vendor-mis/:id', authenticateToken, updateVendorMis);
+app.post('/api/vendor-mis/:id/remarks', authenticateToken, addVendorMisRemark);
 app.delete('/api/vendor-mis/:id', authenticateToken, deleteVendorMis);
 
 // Keep-alive self-ping to bypass free-tier inactivity sleep

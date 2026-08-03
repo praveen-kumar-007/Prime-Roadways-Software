@@ -258,7 +258,7 @@ const Login = () => {
           <div style={{ position: 'relative', zIndex: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
             {/* Minimalist Logo Overlay */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-              <img src="/IMG-20260803-WA0000.jpg" alt="Prime Roadways Logo" style={{ height: '180px' }} />
+              <img src="/companylogo.jpg" alt="Prime Roadways Logo" style={{ height: '180px' }} />
               <div>
                 <h2 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 800, letterSpacing: '1px', color: '#111827', lineHeight: 1.1 }}>Prime Roadways Carriers PVT LTD</h2>
                 <p style={{ margin: 0, fontSize: '2rem', color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '3px', fontWeight: 700 }}>Logistics Platform</p>
@@ -356,7 +356,7 @@ const Login = () => {
 
             {/* Mobile Logo */}
             <div className="mobile-only-logo" style={{ display: 'none', textAlign: 'center', marginBottom: '2rem' }}>
-              <img src="/IMG-20260803-WA0000.jpg" alt="Prime Roadways Logo" style={{ height: '90px', margin: '0 auto', display: 'block' }} />
+              <img src="/companylogo.jpg" alt="Prime Roadways Logo" style={{ height: '90px', margin: '0 auto', display: 'block' }} />
             </div>
 
             <style>{`
@@ -527,7 +527,7 @@ const Login = () => {
 
               {/* Branding Logo at Top of Form */}
               <div className="desktop-only-logo" style={{ marginBottom: '1.5rem' }}>
-                <img src="/IMG-20260803-WA0000.jpg" alt="Prime Roadways Logo" style={{ height: '56px', objectFit: 'contain' }} />
+                <img src="/companylogo.jpg" alt="Prime Roadways Logo" style={{ height: '56px', objectFit: 'contain' }} />
               </div>
 
               {view === 'login' && (

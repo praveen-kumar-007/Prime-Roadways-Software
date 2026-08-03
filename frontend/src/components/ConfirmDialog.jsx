@@ -49,7 +49,7 @@ const ConfirmDialog = ({ isOpen, title, message, confirmText, cancelText, onConf
       >
         <div style={{ padding: '24px 24px 16px', textAlign: 'center' }}>
           <img 
-            src="/IMG-20260803-WA0000.jpg" 
+            src="/companylogo.jpg" 
             alt="Prime Roadways" 
             style={{ height: '50px', objectFit: 'contain', marginBottom: '16px', margin: '0 auto', display: 'block' }} 
             onError={(e) => e.target.style.display = 'none'}

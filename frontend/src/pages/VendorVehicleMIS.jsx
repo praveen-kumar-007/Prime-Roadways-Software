@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from "react";
 import axios from "axios";
 import Papa from "papaparse";
 import Table from "../components/Table";
-import { Plus, Truck, Check, X, Clock, Trash2, Edit, Printer, Download, Filter, Search, Upload, FileText } from "lucide-react";
+import { Plus, Truck, Check, X, Clock, Trash2, Edit, Printer, Download, Filter, Search, Upload, FileText, MessageSquare, Send, User } from "lucide-react";
 import RupeeIcon from '../components/RupeeIcon';
 import { formatAllCaps, formatTitleCase, formatDate, formatDateForInput, parseDate } from "../utils/formatters";
 import { useToast } from "../context/ToastContext";
@@ -23,6 +23,9 @@ const VendorMIS = () => {
   const initialVendorMisForm = getInitialVendorMisForm();
 
   const [vendorMisEntries, setVendorMisEntries] = useState([]);
+  const [activeRemarksModal, setActiveRemarksModal] = useState(null);
+  const [remarkText, setRemarkText] = useState("");
+  const [submittingRemark, setSubmittingRemark] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -421,7 +424,7 @@ const VendorMIS = () => {
         <div className="table-responsive">
           <Table
             loading={false}
-            headers={["Vendor Name", "Details", "Total Amount", "Status", "Created Date", ...(user?.role === 'Vendor' ? [] : ["Actions"])]}
+            headers={["Vendor Name", "Details", "Total Amount", "Status", "Remarks", "Created Date", ...(user?.role === 'Vendor' ? [] : ["Actions"])]}
             data={filteredEntries}
             emptyMessage="No Vendor MIS entries added yet. Click 'Add Vendor MIS Entry' to start."
             renderRow={(item, idx) => (
@@ -516,6 +519,47 @@ const VendorMIS = () => {
                   }}>
                     {item.approvalStatus || 'Approved'}
                   </span>
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveRemarksModal(item);
+                      setRemarkText("");
+                    }}
+                    style={{
+                      background: (item.remarks && item.remarks.length > 0) ? "#eff6ff" : "#f8fafc",
+                      border: (item.remarks && item.remarks.length > 0) ? "1px solid #3b82f6" : "1px solid #cbd5e1",
+                      color: (item.remarks && item.remarks.length > 0) ? "#1d4ed8" : "#475569",
+                      padding: "6px 12px",
+                      borderRadius: "20px",
+                      fontSize: "0.75rem",
+                      fontWeight: "600",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                      whiteSpace: "nowrap"
+                    }}
+                    title="Open Communication & Remarks"
+                  >
+                    <MessageSquare size={14} />
+                    <span>Remarks</span>
+                    {(item.remarks && item.remarks.length > 0) && (
+                      <span style={{
+                        background: "#2563eb",
+                        color: "#fff",
+                        borderRadius: "10px",
+                        padding: "1px 6px",
+                        fontSize: "0.65rem",
+                        fontWeight: "700"
+                      }}>
+                        {item.remarks.length}
+                      </span>
+                    )}
+                  </button>
                 </td>
                 <td style={{ whiteSpace: "nowrap" }}>{item.createdAt ? formatDate(item.createdAt) : "-"}</td>
                 {user?.role !== 'Vendor' && (
@@ -632,10 +676,299 @@ const VendorMIS = () => {
         </div>
       </div>
 
+      {/* Communication & Remarks Modal */}
+      {activeRemarksModal && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(15, 23, 42, 0.7)",
+          backdropFilter: "blur(6px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 9999,
+          padding: "1rem"
+        }}>
+          <div style={{
+            background: "#ffffff",
+            borderRadius: "16px",
+            width: "95%",
+            maxWidth: "640px",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.35)",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            maxHeight: "88vh",
+            border: "1px solid #cbd5e1"
+          }}>
+            {/* Modal Header with Company Logo & Status Info */}
+            <div style={{
+              background: "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)",
+              color: "#ffffff",
+              padding: "1rem 1.25rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderBottom: "1px solid rgba(255,255,255,0.1)",
+              flexShrink: 0
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <img
+                  src="/companylogo.jpg"
+                  alt="Prime Roadways Logo"
+                  style={{
+                    height: "40px",
+                    width: "auto",
+                    objectFit: "contain",
+                    background: "#ffffff",
+                    padding: "4px 8px",
+                    borderRadius: "8px",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.2)"
+                  }}
+                />
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: "800", fontSize: "1rem", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                    <span>Prime Roadways</span>
+                    <span style={{ fontSize: "0.65rem", background: "rgba(255,255,255,0.15)", padding: "2px 6px", borderRadius: "6px", fontWeight: "700" }}>COMMUNICATIONS</span>
+                  </div>
+                  <div style={{ fontSize: "0.8rem", color: "#cbd5e1", marginTop: "4px", display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                    <span>Vendor: <strong style={{ color: "#ffffff" }}>{activeRemarksModal.vendorName}</strong></span>
+                    <span>•</span>
+                    <span>Amount: <strong style={{ color: "#10b981" }}><RupeeIcon size={12} />{parseFloat(activeRemarksModal.totalAmount || 0).toFixed(2)}</strong></span>
+                    <span>•</span>
+                    <span style={{
+                      background: activeRemarksModal.approvalStatus === 'Approved' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                      color: activeRemarksModal.approvalStatus === 'Approved' ? '#6ee7b7' : '#fcd34d',
+                      padding: "1px 6px",
+                      borderRadius: "4px",
+                      fontWeight: 700,
+                      fontSize: "0.7rem"
+                    }}>
+                      {activeRemarksModal.approvalStatus || 'Approved'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveRemarksModal(null)}
+                style={{
+                  background: "rgba(255,255,255,0.15)",
+                  border: "none",
+                  color: "#ffffff",
+                  width: "34px",
+                  height: "34px",
+                  borderRadius: "50%",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "background 0.2s",
+                  flexShrink: 0,
+                  marginLeft: "10px"
+                }}
+                title="Close Modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Conversation Messages List */}
+            <div style={{
+              padding: "1.25rem",
+              overflowY: "auto",
+              flex: "1 1 auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1rem",
+              background: "#f8fafc",
+              minHeight: "240px"
+            }}>
+              {(!activeRemarksModal.remarks || activeRemarksModal.remarks.length === 0) ? (
+                <div style={{
+                  textAlign: "center",
+                  padding: "2.5rem 1rem",
+                  color: "#64748b",
+                  background: "#ffffff",
+                  borderRadius: "12px",
+                  border: "1px dashed #cbd5e1"
+                }}>
+                  <MessageSquare size={36} style={{ color: "#94a3b8", marginBottom: "8px" }} />
+                  <p style={{ fontWeight: 600, margin: "0 0 4px", color: "#334155" }}>No communication history yet</p>
+                  <p style={{ fontSize: "0.85rem", margin: 0 }}>Start the discussion between Vendor and Admin below.</p>
+                </div>
+              ) : (
+                activeRemarksModal.remarks.map((remark, idx) => {
+                  const isVendor = remark.senderRole === 'Vendor';
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        alignSelf: isVendor ? "flex-start" : "flex-end",
+                        maxWidth: "85%",
+                        background: isVendor ? "#ffffff" : "#eff6ff",
+                        border: isVendor ? "1px solid #e2e8f0" : "1px solid #bfdbfe",
+                        borderRadius: isVendor ? "14px 14px 14px 4px" : "14px 14px 4px 14px",
+                        padding: "12px 16px",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.06)"
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", marginBottom: "6px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <span style={{
+                            fontSize: "0.65rem",
+                            fontWeight: 700,
+                            padding: "2px 8px",
+                            borderRadius: "10px",
+                            background: isVendor ? "#fef3c7" : "#dbeafe",
+                            color: isVendor ? "#92400e" : "#1e40af",
+                            textTransform: "uppercase"
+                          }}>
+                            {isVendor ? "Vendor" : (remark.senderRole === 'SuperAdmin' ? "Super Admin" : "Admin")}
+                          </span>
+                          <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#334155" }}>
+                            {remark.senderName || (isVendor ? "Vendor" : "Admin")}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>
+                          {remark.createdAt ? formatDate(remark.createdAt) : ""}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: "0.9rem", color: "#1e293b", lineHeight: "1.4", wordBreak: "break-word" }}>
+                        {remark.message}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Input Footer or Closed Notice */}
+            {(user?.role === 'Vendor' && activeRemarksModal.approvalStatus === 'Approved') ? (
+              <div style={{
+                padding: "1.25rem 1.5rem",
+                background: "#fff1f2",
+                borderTop: "1px solid #fecdd3",
+                color: "#be123c",
+                textAlign: "center",
+                fontSize: "0.85rem",
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                flexShrink: 0,
+                boxShadow: "0 -2px 10px rgba(0,0,0,0.02)"
+              }}>
+                <span style={{ fontSize: "1.1rem" }}>🔒</span>
+                <span>Remarks are closed for Vendors because this entry has been Approved.</span>
+              </div>
+            ) : (
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!remarkText || !remarkText.trim() || submittingRemark) return;
+                  setSubmittingRemark(true);
+                  try {
+                    const res = await axios.post(
+                      `${API}/vendor-mis/${activeRemarksModal.id}/remarks`,
+                      { message: remarkText.trim() },
+                      { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    if (res.data.success && res.data.data) {
+                      const newRemark = res.data.data;
+                      const updatedRemarks = [...(activeRemarksModal.remarks || []), newRemark];
+                      setActiveRemarksModal({
+                        ...activeRemarksModal,
+                        remarks: updatedRemarks
+                      });
+                      const updatedEntries = vendorMisEntries.map(entry =>
+                        entry.id === activeRemarksModal.id
+                          ? { ...entry, remarks: updatedRemarks }
+                          : entry
+                      );
+                      setVendorMisEntries(updatedEntries);
+                      setRemarkText("");
+                      addToast("Remark sent!", "success");
+                    }
+                  } catch (err) {
+                    addToast(err.response?.data?.message || "Failed to send remark", "error");
+                  } finally {
+                    setSubmittingRemark(false);
+                  }
+                }}
+                style={{
+                  padding: "1rem 1.25rem",
+                  background: "#ffffff",
+                  borderTop: "1px solid #e2e8f0",
+                  display: "flex",
+                  gap: "10px",
+                  alignItems: "flex-end",
+                  flexShrink: 0,
+                  boxShadow: "0 -2px 10px rgba(0,0,0,0.03)"
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <textarea
+                    className="form-control"
+                    rows={2}
+                    placeholder="Write a remark for Admin / Vendor..."
+                    value={remarkText}
+                    onChange={(e) => setRemarkText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        e.currentTarget.form.requestSubmit();
+                      }
+                    }}
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid #cbd5e1",
+                      fontSize: "0.85rem",
+                      resize: "none",
+                      outline: "none",
+                      fontFamily: "inherit"
+                    }}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={submittingRemark || !remarkText.trim()}
+                  style={{
+                    background: submittingRemark || !remarkText.trim() ? "#94a3b8" : "#2563eb",
+                    color: "#ffffff",
+                    border: "none",
+                    borderRadius: "8px",
+                    padding: "10px 16px",
+                    fontWeight: 600,
+                    fontSize: "0.85rem",
+                    cursor: submittingRemark || !remarkText.trim() ? "not-allowed" : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    height: "42px",
+                    transition: "background 0.2s",
+                    flexShrink: 0
+                  }}
+                >
+                  <Send size={16} />
+                  <span>Send</span>
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="print-only">
         <>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "15px", borderBottom: "2px solid #1e293b", paddingBottom: "10px" }}>
-            <img src="/Prime RoadWAYS.png" alt="Prime Roadways" style={{ height: "70px", objectFit: "contain" }} />
+            <img src="/companylogo.jpg" alt="Prime Roadways" style={{ height: "70px", objectFit: "contain" }} />
             <div style={{ textAlign: "right" }}>
               <h2 style={{ margin: "0 0 4px", color: "#b91c1c", textTransform: "uppercase", letterSpacing: "1px" }}>PRIME ROADWAYS</h2>
               <p style={{ margin: "0 0 2px", fontSize: "9pt", color: "#334155" }}>PLOT NO 292/292A & 292B, OM VIHAR, WEST DELHI, NEW DELHI-110059</p>

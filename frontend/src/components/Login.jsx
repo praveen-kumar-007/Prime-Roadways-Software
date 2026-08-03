@@ -65,7 +65,7 @@ function Login() {
         <div className="bloom-1"></div>
         <div className="bloom-2"></div>
         <div className="left-content">
-          <img src="/IMG-20260803-WA0000.jpg" alt="Prime Roadways" className="hero-logo" />
+          <img src="/companylogo.jpg" alt="Prime Roadways" className="hero-logo" />
           <h1 className="hero-title">Prime Roadways</h1>
           <p className="hero-subtitle">
             Enterprise Logistics & Transportation Management System
@@ -76,7 +76,7 @@ function Login() {
       <div className="login-right">
         <div className="login-card">
           <div className="mobile-logo-wrapper">
-            <img src="/IMG-20260803-WA0000.jpg" alt="Prime Roadways" className="mobile-logo" />
+            <img src="/companylogo.jpg" alt="Prime Roadways" className="mobile-logo" />
           </div>
 
           <h2 className="login-title">Sign in</h2>

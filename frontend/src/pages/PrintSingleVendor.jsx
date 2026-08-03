@@ -142,13 +142,13 @@ const PrintSingleVendor = () => {
             <div className="premium-border" style={{ height: "100%", position: "relative", display: "flex", flexDirection: "column" }}>
               
               <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: "none", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                 <img src="/IMG-20260803-WA0000.jpg" alt="Watermark" style={{ width: "400px", opacity: 0.05 }} />
+                 <img src="/companylogo.jpg" alt="Watermark" style={{ width: "400px", opacity: 0.05 }} />
               </div>
       
               <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column" }}>
                 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 2rem", borderBottom: "2px solid #1e293b" }}>
-                  <div style={{ width: "120px", flexShrink: 0 }}><img src="/IMG-20260803-WA0000.jpg" alt="Prime Roadways" style={{ width: "100%", height: "auto", borderRadius: "8px" }} /></div>
+                  <div style={{ width: "120px", flexShrink: 0 }}><img src="/companylogo.jpg" alt="Prime Roadways" style={{ width: "100%", height: "auto", borderRadius: "8px" }} /></div>
                   <div style={{ textAlign: "center", flex: 1, padding: "0 15px", minWidth: 0 }}>
                     <h1 style={{ margin: "0 0 2px", fontSize: "1.6rem", fontWeight: "800", textTransform: "uppercase", letterSpacing: "0.5px", color: "#b91c1c" }}>PRIME ROADWAYS</h1>
                     <p style={{ margin: "0 0 2px", fontSize: "1rem", fontWeight: "600", color: "#334155" }}>PLOT NO 292/292A & 292B, OM VIHAR, WEST DELHI, NEW DELHI-110059</p>
