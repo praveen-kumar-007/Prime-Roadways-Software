@@ -9,7 +9,7 @@ const Login = () => {
   const navigate = useNavigate();
   // View states: 'login', 'forgot', 'otp', 'reset'
   const [view, setView] = useState('login');
-  
+
   // Form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,7 +17,7 @@ const Login = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [resetToken, setResetToken] = useState('');
-  
+
   // UI states
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -31,7 +31,7 @@ const Login = () => {
     if (savedSession) {
       const { email: savedEmail, expiresAt, resendAt } = JSON.parse(savedSession);
       const now = Date.now();
-      
+
       if (now < expiresAt) {
         setEmail(savedEmail);
         setView('otp');
@@ -52,7 +52,7 @@ const Login = () => {
     }
     return () => clearInterval(interval);
   }, [resendTimer, view]);
-  
+
   const { login } = useContext(AuthContext);
 
   const API_URL = API_BASE_URL;
@@ -128,7 +128,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     try {
       const response = await axios.post(`${API_URL}/api/auth/login`, {
         email,
@@ -151,14 +151,14 @@ const Login = () => {
     setLoading(true);
     setError('');
     setSuccessMsg('');
-    
+
     try {
       const response = await axios.post(`${API_URL}/api/auth/forgot-password`, { email });
       if (response.data.success) {
         setSuccessMsg('An OTP has been sent to your email.');
         setView('otp');
         setResendTimer(120);
-        
+
         localStorage.setItem('otpSession', JSON.stringify({
           email,
           expiresAt: Date.now() + 5 * 60 * 1000,
@@ -176,7 +176,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     try {
       const response = await axios.post(`${API_URL}/api/auth/verify-otp`, { email, otp });
       if (response.data.success) {
@@ -198,15 +198,15 @@ const Login = () => {
       setError("Passwords don't match.");
       return;
     }
-    
+
     setLoading(true);
     setError('');
-    
+
     try {
-      const response = await axios.post(`${API_URL}/api/auth/reset-password`, { 
-        email, 
-        resetToken, 
-        newPassword 
+      const response = await axios.post(`${API_URL}/api/auth/reset-password`, {
+        email,
+        resetToken,
+        newPassword
       });
       if (response.data.success) {
         setSuccessMsg('Password has been reset successfully! You can now log in.');
@@ -232,7 +232,7 @@ const Login = () => {
       overflow: 'hidden',
       fontFamily: "'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
     }}>
-      
+
       {/* Main Full-Bleed Split Layout */}
       <div style={{
         display: 'flex',
@@ -240,7 +240,7 @@ const Login = () => {
         height: '100%',
         background: '#ffffff',
       }}>
-        
+
         {/* --- LEFT SIDE: BRAND SHOWCASE --- */}
         <div className="showcase-sidebar" style={{
           flex: '1',
@@ -260,7 +260,7 @@ const Login = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
               <img src="/IMG-20260803-WA0000.jpg" alt="Prime Roadways Logo" style={{ height: '180px' }} />
               <div>
-                <h2 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 800, letterSpacing: '1px', color: '#111827', lineHeight: 1.1 }}>Multi Marg Carriers PVT LTD</h2>
+                <h2 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 800, letterSpacing: '1px', color: '#111827', lineHeight: 1.1 }}>Prime Roadways Carriers PVT LTD</h2>
                 <p style={{ margin: 0, fontSize: '2rem', color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '3px', fontWeight: 700 }}>Logistics Platform</p>
               </div>
             </div>
@@ -281,7 +281,7 @@ const Login = () => {
           {/* Marketing Copy */}
           <div style={{ marginTop: '4rem', maxWidth: '500px' }}>
             <h1 style={{ fontSize: '3.5rem', fontWeight: 800, lineHeight: 1.1, color: '#111827', marginBottom: '1.5rem' }}>
-              Smarter <span style={{ color: '#7c3aed' }}>Logistics.</span><br/>
+              Smarter <span style={{ color: '#7c3aed' }}>Logistics.</span><br />
               Stronger <span style={{ color: '#7c3aed' }}>Supply Chains.</span>
             </h1>
             <p style={{ fontSize: '1.1rem', color: '#4b5563', lineHeight: 1.6, marginBottom: '3rem' }}>
@@ -306,7 +306,7 @@ const Login = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Bottom Floating Stats */}
           <div style={{ marginTop: 'auto', background: '#312e81', color: 'white', padding: '1.5rem', borderRadius: '16px', display: 'inline-flex', alignItems: 'center', gap: '1rem', width: 'fit-content', boxShadow: '0 15px 30px rgba(49, 46, 129, 0.4)' }}>
             <div style={{ background: 'rgba(255,255,255,0.1)', padding: '0.75rem', borderRadius: '12px' }}><Package size={24} /></div>
@@ -328,7 +328,7 @@ const Login = () => {
           position: 'relative',
           overflow: 'hidden'
         }}>
-          
+
           {/* Abstract Purple Wave Background (Top Right) */}
           <div style={{
             position: 'absolute',
@@ -342,10 +342,10 @@ const Login = () => {
             pointerEvents: 'none'
           }}></div>
 
-          <div className="login-form-container" style={{ 
-            width: '100%', 
-            maxWidth: '440px', 
-            position: 'relative', 
+          <div className="login-form-container" style={{
+            width: '100%',
+            maxWidth: '440px',
+            position: 'relative',
             zIndex: 10,
             background: '#ffffff',
             padding: '3.5rem 3rem',
@@ -353,13 +353,13 @@ const Login = () => {
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.08), 0 0 40px rgba(124, 58, 237, 0.03)',
             border: '1px solid rgba(0,0,0,0.03)'
           }}>
-            
+
             {/* Mobile Logo */}
             <div className="mobile-only-logo" style={{ display: 'none', textAlign: 'center', marginBottom: '2rem' }}>
               <img src="/IMG-20260803-WA0000.jpg" alt="Prime Roadways Logo" style={{ height: '90px', margin: '0 auto', display: 'block' }} />
             </div>
 
-          <style>{`
+            <style>{`
             @media (max-width: 1100px) {
               .showcase-sidebar { display: none !important; }
               .mobile-only-logo { display: block !important; }
@@ -512,259 +512,259 @@ const Login = () => {
               box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
             }
           `}</style>
-          
-          {view !== 'login' && (
-            <button 
-              onClick={() => { setView('login'); setError(''); setSuccessMsg(''); }}
-              className="link-btn"
-              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '2rem', textDecoration: 'none' }}
-            >
-              <ArrowLeft size={16} /> Back to sign in
-            </button>
-          )}
 
-          <div style={{ marginBottom: '2.5rem', marginTop: view === 'login' ? '0' : '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            
-            {/* Branding Logo at Top of Form */}
-            <div className="desktop-only-logo" style={{ marginBottom: '1.5rem' }}>
-              <img src="/IMG-20260803-WA0000.jpg" alt="Prime Roadways Logo" style={{ height: '56px', objectFit: 'contain' }} />
+            {view !== 'login' && (
+              <button
+                onClick={() => { setView('login'); setError(''); setSuccessMsg(''); }}
+                className="link-btn"
+                style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '2rem', textDecoration: 'none' }}
+              >
+                <ArrowLeft size={16} /> Back to sign in
+              </button>
+            )}
+
+            <div style={{ marginBottom: '2.5rem', marginTop: view === 'login' ? '0' : '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+
+              {/* Branding Logo at Top of Form */}
+              <div className="desktop-only-logo" style={{ marginBottom: '1.5rem' }}>
+                <img src="/IMG-20260803-WA0000.jpg" alt="Prime Roadways Logo" style={{ height: '56px', objectFit: 'contain' }} />
+              </div>
+
+              {view === 'login' && (
+                <>
+                  <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#111827', margin: '0 0 0.5rem 0', fontFamily: "'Google Sans', Roboto, Arial, sans-serif", textAlign: 'center' }}>Welcome <span style={{ color: '#7c3aed' }}>back!</span></h2>
+                  <p style={{ color: '#6b7280', margin: 0, fontSize: '1.05rem', textAlign: 'center' }}>Sign in to your Prime Roadways account</p>
+                </>
+              )}
+
+              {view === 'forgot' && (
+                <>
+                  <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#111827', margin: '0 0 0.5rem 0', fontFamily: "'Google Sans', Roboto, Arial, sans-serif", textAlign: 'center' }}>Account <span style={{ color: '#7c3aed' }}>recovery</span></h2>
+                  <p style={{ color: '#6b7280', margin: 0, fontSize: '1.05rem', textAlign: 'center' }}>Recover your Prime Roadways Account</p>
+                </>
+              )}
+
+              {view === 'otp' && (
+                <>
+                  <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#111827', margin: '0 0 0.5rem 0', fontFamily: "'Google Sans', Roboto, Arial, sans-serif", textAlign: 'center' }}>Verify it's <span style={{ color: '#7c3aed' }}>you</span></h2>
+                  <p style={{ color: '#6b7280', margin: 0, fontSize: '1.05rem', textAlign: 'center' }}>We sent a code to your registered email for <strong>{email}</strong></p>
+                </>
+              )}
+
+              {view === 'reset' && (
+                <>
+                  <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#111827', margin: '0 0 0.5rem 0', fontFamily: "'Google Sans', Roboto, Arial, sans-serif", textAlign: 'center' }}>Change <span style={{ color: '#7c3aed' }}>password</span></h2>
+                  <p style={{ color: '#6b7280', margin: 0, fontSize: '1.05rem', textAlign: 'center' }}>Create a strong password</p>
+                </>
+              )}
             </div>
+
+            {error && (
+              <div className="alert-box alert-error">
+                <div style={{ marginTop: '2px' }}><ShieldAlert size={16} /></div>
+                <div>{error}</div>
+              </div>
+            )}
+
+            {successMsg && (
+              <div className="alert-box alert-success">
+                <div style={{ marginTop: '2px' }}><CheckCircle size={16} /></div>
+                <div>{successMsg}</div>
+              </div>
+            )}
 
             {view === 'login' && (
-              <>
-                <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#111827', margin: '0 0 0.5rem 0', fontFamily: "'Google Sans', Roboto, Arial, sans-serif", textAlign: 'center' }}>Welcome <span style={{ color: '#7c3aed' }}>back!</span></h2>
-                <p style={{ color: '#6b7280', margin: 0, fontSize: '1.05rem', textAlign: 'center' }}>Sign in to your Multi Marg account</p>
-              </>
+              <form onSubmit={handleLogin}>
+                <div className="input-group">
+                  <div className="icon-wrapper"><Mail size={18} strokeWidth={2} /></div>
+                  <input
+                    id="login-email"
+                    name="email"
+                    type="text"
+                    className="input-field"
+                    placeholder="Email or Employee Code"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoComplete="username"
+                    aria-label="Email or Employee Code"
+                  />
+                </div>
+
+                <div className="input-group" style={{ marginBottom: '0.75rem' }}>
+                  <div className="icon-wrapper"><Lock size={18} strokeWidth={2} /></div>
+                  <input
+                    id="login-password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    className="input-field"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                    aria-label="Password"
+                  />
+                  <button type="button" className="password-toggle-btn" onClick={() => setShowPassword(!showPassword)} tabIndex="-1" aria-label="Toggle password visibility">
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1.5rem', marginTop: '0.5rem' }}>
+                  <button
+                    type="button"
+                    className="link-btn"
+                    onClick={() => { setView('forgot'); setError(''); setSuccessMsg(''); }}
+                    style={{ color: '#7c3aed' }}
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+
+                <div style={{ marginTop: '1.5rem' }}>
+                  <button type="submit" className="btn-primary" disabled={loading}>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', position: 'relative' }}>
+                      <span>{loading ? 'Signing in...' : 'Sign in'}</span>
+                      {!loading && <ArrowRight size={18} style={{ position: 'absolute', right: '1rem' }} />}
+                    </div>
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', margin: '2rem 0 1.5rem 0' }}>
+                  <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }}></div>
+                  <span style={{ padding: '0 1rem', color: '#64748b', fontSize: '0.85rem' }}>or</span>
+                  <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }}></div>
+                </div>
+
+                <button
+                  type="button"
+                  className="google-btn"
+                  onClick={triggerGoogleSignIn}
+                >
+                  <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                  </svg>
+                  Continue with Google
+                </button>
+              </form>
             )}
-            
+
             {view === 'forgot' && (
-              <>
-                <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#111827', margin: '0 0 0.5rem 0', fontFamily: "'Google Sans', Roboto, Arial, sans-serif", textAlign: 'center' }}>Account <span style={{ color: '#7c3aed' }}>recovery</span></h2>
-                <p style={{ color: '#6b7280', margin: 0, fontSize: '1.05rem', textAlign: 'center' }}>Recover your Multi Marg Account</p>
-              </>
+              <form onSubmit={handleForgotPassword}>
+                <div className="input-group" style={{ marginBottom: '2rem' }}>
+                  <div className="icon-wrapper"><Mail size={18} strokeWidth={2} /></div>
+                  <input
+                    id="forgot-email"
+                    name="email"
+                    type="text"
+                    className="input-field"
+                    placeholder="Email or Employee Code"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoComplete="username"
+                    aria-label="Email or Employee Code for password reset"
+                  />
+                </div>
+
+                <div style={{ marginTop: '1.5rem' }}>
+                  <button type="submit" className="btn-primary" disabled={loading}>
+                    {loading ? 'Sending...' : 'Next'}
+                  </button>
+                </div>
+              </form>
             )}
-            
+
             {view === 'otp' && (
-              <>
-                <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#111827', margin: '0 0 0.5rem 0', fontFamily: "'Google Sans', Roboto, Arial, sans-serif", textAlign: 'center' }}>Verify it's <span style={{ color: '#7c3aed' }}>you</span></h2>
-                <p style={{ color: '#6b7280', margin: 0, fontSize: '1.05rem', textAlign: 'center' }}>We sent a code to your registered email for <strong>{email}</strong></p>
-              </>
+              <form onSubmit={handleVerifyOtp}>
+                <div className="input-group">
+                  <div className="icon-wrapper"><Key size={18} strokeWidth={2} /></div>
+                  <input
+                    id="otp-code"
+                    name="otp"
+                    type="text"
+                    className="input-field"
+                    style={{ fontSize: '1.25rem', letterSpacing: '4px', textAlign: 'center', paddingLeft: '1rem', fontWeight: 500 }}
+                    placeholder="G-000000"
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                    required
+                    autoComplete="one-time-code"
+                    aria-label="One-time password code"
+                  />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '2rem' }}>
+                  <button type="submit" className="btn-primary" disabled={loading || otp.length !== 6}>
+                    {loading ? 'Verifying...' : 'Verify'}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="link-btn"
+                    onClick={handleForgotPassword}
+                    style={{ color: resendTimer > 0 ? '#80868b' : '#1a73e8', cursor: resendTimer > 0 ? 'not-allowed' : 'pointer', textAlign: 'center', width: '100%', marginTop: '0.5rem' }}
+                    disabled={loading || resendTimer > 0}
+                  >
+                    {resendTimer > 0 ? `Resend code in ${Math.floor(resendTimer / 60)}:${(resendTimer % 60).toString().padStart(2, '0')}` : 'Resend code'}
+                  </button>
+                </div>
+              </form>
             )}
-            
+
             {view === 'reset' && (
-              <>
-                <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#111827', margin: '0 0 0.5rem 0', fontFamily: "'Google Sans', Roboto, Arial, sans-serif", textAlign: 'center' }}>Change <span style={{ color: '#7c3aed' }}>password</span></h2>
-                <p style={{ color: '#6b7280', margin: 0, fontSize: '1.05rem', textAlign: 'center' }}>Create a strong password</p>
-              </>
+              <form onSubmit={handleResetPassword}>
+                <div className="input-group">
+                  <div className="icon-wrapper"><Lock size={18} strokeWidth={2} /></div>
+                  <input
+                    id="new-password"
+                    name="newPassword"
+                    type={showPassword ? "text" : "password"}
+                    className="input-field"
+                    placeholder="Create password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                    aria-label="New password"
+                  />
+                  <button type="button" className="password-toggle-btn" onClick={() => setShowPassword(!showPassword)} tabIndex="-1" aria-label="Toggle password visibility">
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+
+                <div className="input-group" style={{ marginBottom: '2rem' }}>
+                  <div className="icon-wrapper"><CheckCircle size={18} strokeWidth={2} /></div>
+                  <input
+                    id="confirm-password"
+                    name="confirmPassword"
+                    type={showPassword ? "text" : "password"}
+                    className="input-field"
+                    placeholder="Confirm password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                    aria-label="Confirm new password"
+                  />
+                  <button type="button" className="password-toggle-btn" onClick={() => setShowPassword(!showPassword)} tabIndex="-1" aria-label="Toggle password visibility">
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+
+                <div style={{ marginTop: '1.5rem' }}>
+                  <button type="submit" className="btn-primary" disabled={loading || !newPassword || !confirmPassword}>
+                    {loading ? 'Saving...' : 'Save password'}
+                  </button>
+                </div>
+              </form>
             )}
-          </div>
-
-          {error && (
-            <div className="alert-box alert-error">
-              <div style={{marginTop: '2px'}}><ShieldAlert size={16} /></div>
-              <div>{error}</div>
-            </div>
-          )}
-          
-          {successMsg && (
-            <div className="alert-box alert-success">
-              <div style={{marginTop: '2px'}}><CheckCircle size={16} /></div>
-              <div>{successMsg}</div>
-            </div>
-          )}
-
-          {view === 'login' && (
-            <form onSubmit={handleLogin}>
-              <div className="input-group">
-                <div className="icon-wrapper"><Mail size={18} strokeWidth={2} /></div>
-                <input 
-                  id="login-email"
-                  name="email"
-                  type="text" 
-                  className="input-field"
-                  placeholder="Email or Employee Code" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required 
-                  autoComplete="username"
-                  aria-label="Email or Employee Code"
-                />
-              </div>
-
-              <div className="input-group" style={{ marginBottom: '0.75rem' }}>
-                <div className="icon-wrapper"><Lock size={18} strokeWidth={2} /></div>
-                <input 
-                  id="login-password"
-                  name="password"
-                  type={showPassword ? "text" : "password"} 
-                  className="input-field"
-                  placeholder="Enter your password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required 
-                  autoComplete="current-password"
-                  aria-label="Password"
-                />
-                <button type="button" className="password-toggle-btn" onClick={() => setShowPassword(!showPassword)} tabIndex="-1" aria-label="Toggle password visibility">
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1.5rem', marginTop: '0.5rem' }}>
-                <button 
-                  type="button" 
-                  className="link-btn"
-                  onClick={() => { setView('forgot'); setError(''); setSuccessMsg(''); }}
-                  style={{ color: '#7c3aed' }}
-                >
-                  Forgot password?
-                </button>
-              </div>
-
-              <div style={{ marginTop: '1.5rem' }}>
-                <button type="submit" className="btn-primary" disabled={loading}>
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', position: 'relative' }}>
-                    <span>{loading ? 'Signing in...' : 'Sign in'}</span>
-                    {!loading && <ArrowRight size={18} style={{ position: 'absolute', right: '1rem' }} />}
-                  </div>
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', margin: '2rem 0 1.5rem 0' }}>
-                <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }}></div>
-                <span style={{ padding: '0 1rem', color: '#64748b', fontSize: '0.85rem' }}>or</span>
-                <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }}></div>
-              </div>
-              
-              <button 
-                type="button" 
-                className="google-btn" 
-                onClick={triggerGoogleSignIn}
-              >
-                <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                </svg>
-                Continue with Google
-              </button>
-            </form>
-          )}
-
-          {view === 'forgot' && (
-            <form onSubmit={handleForgotPassword}>
-              <div className="input-group" style={{ marginBottom: '2rem' }}>
-                <div className="icon-wrapper"><Mail size={18} strokeWidth={2} /></div>
-                <input 
-                  id="forgot-email"
-                  name="email"
-                  type="text" 
-                  className="input-field"
-                  placeholder="Email or Employee Code" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required 
-                  autoComplete="username"
-                  aria-label="Email or Employee Code for password reset"
-                />
-              </div>
-              
-              <div style={{ marginTop: '1.5rem' }}>
-                <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Sending...' : 'Next'}
-                </button>
-              </div>
-            </form>
-          )}
-          
-          {view === 'otp' && (
-            <form onSubmit={handleVerifyOtp}>
-              <div className="input-group">
-                <div className="icon-wrapper"><Key size={18} strokeWidth={2} /></div>
-                <input 
-                  id="otp-code"
-                  name="otp"
-                  type="text" 
-                  className="input-field"
-                  style={{ fontSize: '1.25rem', letterSpacing: '4px', textAlign: 'center', paddingLeft: '1rem', fontWeight: 500 }}
-                  placeholder="G-000000" 
-                  maxLength={6}
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                  required 
-                  autoComplete="one-time-code"
-                  aria-label="One-time password code"
-                />
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '2rem' }}>
-                <button type="submit" className="btn-primary" disabled={loading || otp.length !== 6}>
-                  {loading ? 'Verifying...' : 'Verify'}
-                </button>
-
-                <button 
-                  type="button" 
-                  className="link-btn"
-                  onClick={handleForgotPassword}
-                  style={{ color: resendTimer > 0 ? '#80868b' : '#1a73e8', cursor: resendTimer > 0 ? 'not-allowed' : 'pointer', textAlign: 'center', width: '100%', marginTop: '0.5rem' }}
-                  disabled={loading || resendTimer > 0}
-                >
-                  {resendTimer > 0 ? `Resend code in ${Math.floor(resendTimer / 60)}:${(resendTimer % 60).toString().padStart(2, '0')}` : 'Resend code'}
-                </button>
-              </div>
-            </form>
-          )}
-          
-          {view === 'reset' && (
-            <form onSubmit={handleResetPassword}>
-              <div className="input-group">
-                <div className="icon-wrapper"><Lock size={18} strokeWidth={2} /></div>
-                <input 
-                  id="new-password"
-                  name="newPassword"
-                  type={showPassword ? "text" : "password"} 
-                  className="input-field"
-                  placeholder="Create password" 
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required 
-                  minLength={6}
-                  autoComplete="new-password"
-                  aria-label="New password"
-                />
-                <button type="button" className="password-toggle-btn" onClick={() => setShowPassword(!showPassword)} tabIndex="-1" aria-label="Toggle password visibility">
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-              
-              <div className="input-group" style={{ marginBottom: '2rem' }}>
-                <div className="icon-wrapper"><CheckCircle size={18} strokeWidth={2} /></div>
-                <input 
-                  id="confirm-password"
-                  name="confirmPassword"
-                  type={showPassword ? "text" : "password"} 
-                  className="input-field"
-                  placeholder="Confirm password" 
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required 
-                  minLength={6}
-                  autoComplete="new-password"
-                  aria-label="Confirm new password"
-                />
-                <button type="button" className="password-toggle-btn" onClick={() => setShowPassword(!showPassword)} tabIndex="-1" aria-label="Toggle password visibility">
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-              
-              <div style={{ marginTop: '1.5rem' }}>
-                <button type="submit" className="btn-primary" disabled={loading || !newPassword || !confirmPassword}>
-                  {loading ? 'Saving...' : 'Save password'}
-                </button>
-              </div>
-            </form>
-          )}
 
 
 
