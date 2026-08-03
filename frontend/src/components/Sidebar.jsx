@@ -50,6 +50,18 @@ export const menuItems = [
     permission: "vendormis"
   },
   {
+    name: "Vendors",
+    path: "/dashboard/vendors",
+    icon: <Users size={20} />,
+    permission: "admin"
+  },
+  {
+    name: "Clients",
+    path: "/dashboard/clients",
+    icon: <Building2 size={20} />,
+    permission: "admin"
+  },
+  {
     name: "IAM",
     path: "/dashboard/iam",
     icon: <Shield size={20} />,

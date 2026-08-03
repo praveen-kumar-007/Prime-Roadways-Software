@@ -9,6 +9,8 @@ const { getAllUsers, createUser, updateUser, deleteUser } = require('./src/contr
 const { getTripMis, createTripMis, updateTripMis, deleteTripMis, addTripMisRemark } = require('./src/controllers/tripMisController');
 const { getVendorMis, createVendorMis, updateVendorMis, deleteVendorMis, addVendorMisRemark } = require('./src/controllers/vendorMisController');
 const { getDashboardStats } = require('./src/controllers/dashboardController');
+const { getClients, createClient, updateClient, deleteClient, deleteAllClients } = require('./src/controllers/clientsController');
+const { getVendors, createVendor, updateVendor, deleteVendor, deleteAllVendors } = require('./src/controllers/vendorsController');
 const { authenticateToken, requireAdmin } = require('./src/middleware/auth');
 
 const app = express();
@@ -40,13 +42,13 @@ app.get('/favicon.ico', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'favicon.jpg'));
 });
 
+const { getIncompleteNotifications } = require('./src/controllers/notificationsController');
+
 // Mock endpoints for Prime Roadways UI port
 app.get('/api/settings/config', (req, res) => {
   res.json({ success: true, data: null });
 });
-app.get('/api/notifications/incomplete', (req, res) => {
-  res.json({ success: true, data: [] });
-});
+app.get('/api/notifications/incomplete', authenticateToken, getIncompleteNotifications);
 
 // Initialize Database
 initMongo().catch(err => {
@@ -77,6 +79,20 @@ app.delete('/api/users/:id', authenticateToken, requireAdmin, deleteUser);
 
 // Dashboard
 app.get('/api/dashboard/stats', authenticateToken, getDashboardStats);
+
+// Clients
+app.get('/api/clients', authenticateToken, getClients);
+app.post('/api/clients', authenticateToken, createClient);
+app.put('/api/clients/:id', authenticateToken, requireAdmin, updateClient);
+app.delete('/api/clients/:id', authenticateToken, requireAdmin, deleteClient);
+app.delete('/api/clients/all', authenticateToken, requireAdmin, deleteAllClients);
+
+// Vendors (Admin & SuperAdmin only)
+app.get('/api/vendors', authenticateToken, requireAdmin, getVendors);
+app.post('/api/vendors', authenticateToken, requireAdmin, createVendor);
+app.put('/api/vendors/:id', authenticateToken, requireAdmin, updateVendor);
+app.delete('/api/vendors/:id', authenticateToken, requireAdmin, deleteVendor);
+app.delete('/api/vendors/all', authenticateToken, requireAdmin, deleteAllVendors);
 
 // Trip MIS
 app.get('/api/trip-mis', authenticateToken, getTripMis);

@@ -44,8 +44,16 @@ export const AuthProvider = ({ children }) => {
   const hasPermission = (permission) => {
     if (!user) return false;
     if (user.role === 'SuperAdmin') return true;
+    if (permission === 'admin') {
+      return user.role === 'Admin' || user.role === 'SuperAdmin';
+    }
     
     const perms = user.permissions || [];
+    if (user.role === 'Client' || user.role === 'Vendor') {
+      if (permission === 'tripmis' && (perms.includes('trips') || perms.includes('tripmis') || perms.includes('vendormis'))) {
+        return true;
+      }
+    }
     return perms.includes('all') || perms.includes(permission);
   };
 

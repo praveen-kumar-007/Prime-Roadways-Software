@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
+import { createPortal } from "react-dom";
 import axios from "axios";
 import Papa from "papaparse";
 import Table from "../components/Table";
@@ -33,6 +34,31 @@ const TripMIS = () => {
       remarksEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [activeRemarksModal?.remarks]);
+
+  const handleShareWhatsApp = (item) => {
+    localStorage.setItem("printSingleTripData", JSON.stringify(item));
+    window.open('/print-single-trip/mis-print', '_blank');
+
+    const totalBox = item.box || item.parcels?.reduce((s, p) => s + (parseInt(p.box) || 0), 0) || 0;
+    const totalWeight = item.weight || item.parcels?.reduce((s, p) => s + (parseFloat(p.weight) || 0), 0) || 0;
+    const totalFreight = ((parseFloat(item.freight) || 0) * 1.18).toFixed(2);
+    const dateStr = item.date ? formatDate(item.date) : (item.createdAt ? formatDate(item.createdAt) : '');
+
+    const message = `🚚 *TRIP MIS SUMMARY*\n\n`
+      + `*Trip No:* ${item.tripNo || 'N/A'}\n`
+      + `*Route:* ${item.origin || ''} ➔ ${item.destination || ''}\n`
+      + `*Client:* ${item.clientName || ''}\n`
+      + `*Date:* ${dateStr}\n`
+      + `*Vehicle:* ${item.vehicleNo || ''} (${item.vehicleType || ''})\n`
+      + `*Parcels:* ${totalBox} Boxes | ${totalWeight} kg\n`
+      + `*Total Freight:* ₹ ${totalFreight} (Inc 18% GST)\n\n`
+      + `📄 *Please find attached the PDF report for this Trip MIS entry.*`;
+
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+    setTimeout(() => {
+      window.open(waUrl, '_blank');
+    }, 500);
+  };
 
   const filteredEntries = tripListEntries.filter(item => {
     // 1. Date Filter
@@ -82,27 +108,43 @@ const TripMIS = () => {
   }, 0);
 
   const handleExportCSV = () => {
-    let csv = "Trip No,Vehicle No,Vehicle Type,Mode,Payment,Client Name,Origin,Destination,LR No,Consignor,Consignee,LR Origin,LR Destination,Box,Weight,Freight,Pickup,Delivery,Special,Other,Paid Amount,Approval Status,Created Date\n";
+    let csv = "Trip no,Client,Origin,Destination,Lr no,Consignor,Consignee,Lr origin,Lr destination,Lr mode,Lr box,Lr weight,Veh no,Veh type,Mode,FRIEGHT,Pickup,Delivery,Special,Other,Payment,Approval status,Created at\n";
     filteredEntries.forEach(trip => {
       if (trip.parcels && trip.parcels.length > 0) {
         trip.parcels.forEach((p, pIdx) => {
-          const tripDate = pIdx === 0 ? (trip.date ? formatDate(trip.date) : (trip.createdAt ? formatDate(trip.createdAt) : '')) : '';
           const tripNo = pIdx === 0 ? (trip.tripNo || '') : '';
-          const vehicleNo = pIdx === 0 ? (trip.vehicleNo || '') : '';
-          const vehicleType = pIdx === 0 ? (trip.vehicleType || '') : '';
           const clientName = pIdx === 0 ? (trip.clientName || '') : '';
-          const mode = pIdx === 0 ? (trip.mode || '') : '';
-          const payment = pIdx === 0 ? (trip.payment || '') : '';
           const origin = pIdx === 0 ? (trip.origin || '') : '';
           const destination = pIdx === 0 ? (trip.destination || '') : '';
-          const paidAmount = pIdx === 0 ? (trip.paidAmount || '') : '';
+          
+          const lrNo = p.lrNo || '';
+          const consignor = p.consignor || '';
+          const consignee = p.consignee || '';
+          const lrOrigin = p.origin || '';
+          const lrDestination = p.destination || '';
+          const lrMode = p.mode || '';
+          const lrBox = p.box || '';
+          const lrWeight = p.weight || '';
+          
+          const vehicleNo = pIdx === 0 ? (trip.vehicleNo || '') : '';
+          const vehicleType = pIdx === 0 ? (trip.vehicleType || '') : '';
+          const mode = pIdx === 0 ? (trip.mode || '') : '';
+          
+          const freight = p.freight || '';
+          const pickup = p.pickup || '';
+          const delivery = p.delivery || '';
+          const special = p.special || '';
+          const other = p.other || '';
+          
+          const payment = pIdx === 0 ? (trip.payment || '') : '';
           const approvalStatus = pIdx === 0 ? (trip.approvalStatus || '') : '';
+          const tripDate = pIdx === 0 ? (trip.date ? formatDate(trip.date) : (trip.createdAt ? formatDate(trip.createdAt) : '')) : '';
 
-          csv += `"${tripNo}","${vehicleNo}","${vehicleType}","${mode}","${payment}","${clientName}","${origin}","${destination}","${p.lrNo || ''}","${p.consignor || ''}","${p.consignee || ''}","${p.origin || ''}","${p.destination || ''}","${p.box || ''}","${p.weight || ''}","${p.freight || ''}","${p.pickup || ''}","${p.delivery || ''}","${p.special || ''}","${p.other || ''}","${paidAmount}","${approvalStatus}","${tripDate}"\n`;
+          csv += `"${tripNo}","${clientName}","${origin}","${destination}","${lrNo}","${consignor}","${consignee}","${lrOrigin}","${lrDestination}","${lrMode}","${lrBox}","${lrWeight}","${vehicleNo}","${vehicleType}","${mode}","${freight}","${pickup}","${delivery}","${special}","${other}","${payment}","${approvalStatus}","${tripDate}"\n`;
         });
       } else {
         const tripDate = trip.date ? formatDate(trip.date) : (trip.createdAt ? formatDate(trip.createdAt) : '');
-        csv += `"${trip.tripNo || ''}","${trip.vehicleNo || ''}","${trip.vehicleType || ''}","${trip.mode || ''}","${trip.payment || ''}","${trip.clientName || ''}","${trip.origin || ''}","${trip.destination || ''}","","","","","","","","","","","","","${trip.paidAmount || ''}","${trip.approvalStatus || ''}","${tripDate}"\n`;
+        csv += `"${trip.tripNo || ''}","${trip.clientName || ''}","${trip.origin || ''}","${trip.destination || ''}","","","","","","","","","${trip.vehicleNo || ''}","${trip.vehicleType || ''}","${trip.mode || ''}","","","","","","${trip.payment || ''}","${trip.approvalStatus || ''}","${tripDate}"\n`;
       }
     });
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -119,7 +161,7 @@ const TripMIS = () => {
   const fileInputRef = useRef(null);
 
   const handleSampleCSV = () => {
-    const csv = "Trip Date,Trip No,Vehicle No,Vehicle Type,Mode,Payment,Client Name,Origin,Destination,LR No,Consignor,Consignee,LR Origin,LR Destination,Box,Weight,Freight,Pickup,Delivery,Special,Other,Paid Amount\n2026-08-01,TRP-1001,DL1A1234,Container,Normal,Paid,XYZ Corp,Delhi,Mumbai,LR-001,ABC Ltd,DEF Ltd,Delhi,Mumbai,10,500.5,15000,500,0,0,0,15000\n";
+    const csv = "Trip no,Client,Origin,Destination,Lr no,Consignor,Consignee,Lr origin,Lr destination,Lr mode,Lr box,Lr weight,Veh no,Veh type,Mode,FRIEGHT,Pickup,Delivery,Special,Other,Payment,Approval status,Created at\nPR-1001,XYZ Corp,Delhi,Mumbai,LR-001,ABC Ltd,DEF Ltd,Delhi,Mumbai,Air,10,500.5,DL1A1234,Container,Normal,15000,500,0,0,0,Paid,Approved,2026-08-01\n";
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -148,32 +190,33 @@ const TripMIS = () => {
         const tripsMap = {};
 
         data.forEach(row => {
-          const tripNo = row['Trip No'] || `TRP-NEW-${Math.floor(Math.random() * 10000)}`;
+          const tripNo = row['Trip no'] || `PR-NEW-${Math.floor(Math.random() * 10000)}`;
           if (!tripsMap[tripNo]) {
             tripsMap[tripNo] = {
-              tripNo: row['Trip No'] || '',
-              date: formatDate(row['Trip Date'] || new Date()),
-              vehicleNo: row['Vehicle No'] || '',
-              vehicleType: row['Vehicle Type'] || '',
+              tripNo: row['Trip no'] || '',
+              date: row['Created at'] ? formatDate(row['Created at']) : formatDate(new Date()),
+              vehicleNo: row['Veh no'] || '',
+              vehicleType: row['Veh type'] || '',
               mode: row['Mode'] || 'Normal',
               payment: row['Payment'] || 'To Pay',
-              clientName: row['Client Name'] || '',
+              clientName: row['Client'] || '',
               origin: row['Origin'] || '',
               destination: row['Destination'] || '',
-              paidAmount: parseFloat(row['Paid Amount']) || 0,
+              paidAmount: 0,
               parcels: []
             };
           }
-          if (row['LR No']) {
+          if (row['Lr no']) {
             tripsMap[tripNo].parcels.push({
-              lrNo: row['LR No'],
+              lrNo: row['Lr no'],
               consignor: row['Consignor'] || '',
               consignee: row['Consignee'] || '',
-              origin: row['LR Origin'] || tripsMap[tripNo].origin,
-              destination: row['LR Destination'] || tripsMap[tripNo].destination,
-              box: row['Box'] || '0',
-              weight: row['Weight'] || '0',
-              freight: row['Freight'] || '0',
+              origin: row['Lr origin'] || tripsMap[tripNo].origin,
+              destination: row['Lr destination'] || tripsMap[tripNo].destination,
+              mode: row['Lr mode'] || tripsMap[tripNo].mode,
+              box: row['Lr box'] || '0',
+              weight: row['Lr weight'] || '0',
+              freight: row['FRIEGHT'] || '0',
               pickup: row['Pickup'] || '0',
               delivery: row['Delivery'] || '0',
               special: row['Special'] || '0',
@@ -210,10 +253,17 @@ const TripMIS = () => {
     e.target.value = null;
   };
 
+  const [clientsList, setClientsList] = useState([]);
+  const [showQuickAddClient, setShowQuickAddClient] = useState(false);
+  const [newClientName, setNewClientName] = useState('');
+
   useEffect(() => {
     if (token) {
       axios.get(`${API}/trip-mis`, { headers: { Authorization: `Bearer ${token}` } })
         .then(res => { if (res.data.success) setTripListEntries(res.data.data); })
+        .catch(err => console.error(err));
+      axios.get(`${API}/clients`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => { if (res.data.success) setClientsList(res.data.data || []); })
         .catch(err => console.error(err));
     }
   }, [token]);
@@ -252,14 +302,18 @@ const TripMIS = () => {
               <input type="date" className="form-control" style={{ border: "none", height: "30px", padding: "0 5px", fontSize: "0.8rem", width: "115px" }} value={endDate} onChange={e => setEndDate(e.target.value)} />
             </div>
 
-            <input type="file" accept=".csv" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImportCSV} />
-            <button className="btn" style={{ background: "white", border: "1px solid #cbd5e1" }} onClick={() => fileInputRef.current.click()}>
-              <Upload size={16} style={{ marginRight: 6 }} /> Import CSV
-            </button>
+            {user?.role !== 'Client' && (
+              <>
+                <input type="file" accept=".csv" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImportCSV} />
+                <button className="btn" style={{ background: "white", border: "1px solid #cbd5e1" }} onClick={() => fileInputRef.current.click()}>
+                  <Upload size={16} style={{ marginRight: 6 }} /> Import CSV
+                </button>
 
-            <button className="btn" style={{ background: "white", border: "1px solid #cbd5e1" }} onClick={handleSampleCSV}>
-              <FileText size={16} style={{ marginRight: 6 }} /> Sample CSV
-            </button>
+                <button className="btn" style={{ background: "white", border: "1px solid #cbd5e1" }} onClick={handleSampleCSV}>
+                  <FileText size={16} style={{ marginRight: 6 }} /> Sample CSV
+                </button>
+              </>
+            )}
 
             <button className="btn" style={{ background: "white", border: "1px solid #cbd5e1" }} onClick={handleExportCSV}>
               <Download size={16} style={{ marginRight: 6 }} /> Export CSV
@@ -270,7 +324,7 @@ const TripMIS = () => {
             <button className="btn" style={{ background: "white", border: "1px solid #cbd5e1" }} onClick={() => window.print()}>
               <Printer size={16} style={{ marginRight: 6 }} /> Print All
             </button>
-            {!showTripListForm && (
+            {(!showTripListForm && user?.role !== 'Client') && (
               <button className="btn btn-primary" onClick={() => { setTripListForm(initialTripListForm); setEditingId(null); setEditingStatus(''); setShowTripListForm(true); }}>
                 <Plus size={16} style={{ marginRight: 6 }} /> Add Trip MIS Entry
               </button>
@@ -307,6 +361,13 @@ const TripMIS = () => {
             const totalBox = tripListForm.parcels.reduce((sum, p) => sum + (parseInt(p.box) || 0), 0);
             const totalWeight = tripListForm.parcels.reduce((sum, p) => sum + (parseFloat(p.weight) || 0), 0);
 
+            const cleanParcels = tripListForm.parcels.map(p => ({
+              ...p,
+              origin: p.origin || tripListForm.origin || "",
+              destination: p.destination || tripListForm.destination || "",
+              mode: p.mode || tripListForm.mode || "Normal"
+            }));
+
             const newEntry = {
               tripNo: tripListForm.tripNo,
               origin: tripListForm.origin,
@@ -317,7 +378,7 @@ const TripMIS = () => {
               vehicleNo: tripListForm.vehicleNo,
               mode: tripListForm.mode,
               payment: tripListForm.payment,
-              parcels: tripListForm.parcels,
+              parcels: cleanParcels,
               freight: totalFreight,
               box: totalBox,
               weight: totalWeight,
@@ -329,7 +390,7 @@ const TripMIS = () => {
                 const res = await axios.put(`${API}/trip-mis/${editingId}`, newEntry, { headers: { Authorization: `Bearer ${token}` } });
                 if (res.data.success) {
                   setTripListEntries(tripListEntries.map(t => t.id === editingId ? { ...t, ...newEntry } : t));
-                  setTripListForm(initialTripListForm);
+                  setTripListForm({ ...initialTripListForm, parcels: [{ ...initialParcel }] });
                   setEditingId(null);
                   setEditingStatus('');
                   setShowTripListForm(false);
@@ -339,7 +400,7 @@ const TripMIS = () => {
                 const res = await axios.post(`${API}/trip-mis`, newEntry, { headers: { Authorization: `Bearer ${token}` } });
                 if (res.data.success) {
                   setTripListEntries([res.data.data, ...tripListEntries]);
-                  setTripListForm(initialTripListForm);
+                  setTripListForm({ ...initialTripListForm, parcels: [{ ...initialParcel }] });
                   setShowTripListForm(false);
                   addToast("Trip MIS entry added successfully!", "success");
                 }
@@ -354,19 +415,47 @@ const TripMIS = () => {
             <div className="grid-3-col" style={{ padding: "1.5rem", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0", marginBottom: "2rem" }}>
               <div className="form-group">
                 <label className="form-label" style={{ fontWeight: "500", color: "#374151" }}>Trip Number<span style={{ color: "#ef4444", marginLeft: "2px" }}>*</span></label>
-                <input type="text" className="form-control" placeholder="Auto-generated (e.g. TRP-1)" value={tripListForm.tripNo} disabled />
+                <input type="text" className="form-control" placeholder="Auto-generated (e.g. PR-1001)" value={tripListForm.tripNo} disabled />
               </div>
               <div className="form-group">
-                <label className="form-label" style={{ fontWeight: "500", color: "#374151" }}>From<span style={{ color: "#ef4444", marginLeft: "2px" }}>*</span></label>
-                <input type="text" className="form-control" placeholder="Enter From" value={tripListForm.origin} onChange={e => setTripListForm({ ...tripListForm, origin: formatAllCaps(e.target.value) })} required />
+                <label className="form-label" style={{ fontWeight: "500", color: "#374151" }}>Trip Origin (From)<span style={{ color: "#ef4444", marginLeft: "2px" }}>*</span></label>
+                <input type="text" className="form-control" placeholder="Enter Trip Origin Location" value={tripListForm.origin} onChange={e => setTripListForm({ ...tripListForm, origin: formatAllCaps(e.target.value) })} required />
               </div>
               <div className="form-group">
-                <label className="form-label" style={{ fontWeight: "500", color: "#374151" }}>To<span style={{ color: "#ef4444", marginLeft: "2px" }}>*</span></label>
-                <input type="text" className="form-control" placeholder="Enter To" value={tripListForm.destination} onChange={e => setTripListForm({ ...tripListForm, destination: formatAllCaps(e.target.value) })} required />
+                <label className="form-label" style={{ fontWeight: "500", color: "#374151" }}>Trip Destination (To)<span style={{ color: "#ef4444", marginLeft: "2px" }}>*</span></label>
+                <input type="text" className="form-control" placeholder="Enter Trip Destination Location" value={tripListForm.destination} onChange={e => setTripListForm({ ...tripListForm, destination: formatAllCaps(e.target.value) })} required />
               </div>
               <div className="form-group">
-                <label className="form-label" style={{ fontWeight: "500", color: "#374151" }}>Client Name<span style={{ color: "#ef4444", marginLeft: "2px" }}>*</span></label>
-                <input type="text" className="form-control" placeholder="Enter Client Name" value={tripListForm.clientName} onChange={e => setTripListForm({ ...tripListForm, clientName: formatAllCaps(e.target.value) })} required />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                  <label className="form-label" style={{ fontWeight: "500", color: "#374151", margin: 0 }}>Client Name<span style={{ color: "#ef4444", marginLeft: "2px" }}>*</span></label>
+                  <button
+                    type="button"
+                    onClick={() => setShowQuickAddClient(true)}
+                    style={{ background: "transparent", border: "none", color: "#4F46E5", fontSize: "0.8rem", fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", gap: "3px" }}
+                  >
+                    <Plus size={14} /> + Add New Client
+                  </button>
+                </div>
+                <select
+                  className="form-control"
+                  value={tripListForm.clientName || ""}
+                  onChange={e => {
+                    if (e.target.value === "__NEW__") {
+                      setShowQuickAddClient(true);
+                    } else {
+                      setTripListForm({ ...tripListForm, clientName: e.target.value });
+                    }
+                  }}
+                  required
+                >
+                  <option value="">-- Select Client --</option>
+                  {clientsList.map((cl, i) => (
+                    <option key={cl.id || i} value={cl.name || cl.clientName}>
+                      {cl.name || cl.clientName} {cl.gst ? `(${cl.gst})` : ''}
+                    </option>
+                  ))}
+                  <option value="__NEW__" style={{ fontWeight: "700", color: "#4F46E5" }}>+ Add New Client...</option>
+                </select>
               </div>
               <div className="form-group">
                 <label className="form-label" style={{ fontWeight: "500", color: "#374151" }}>Date<span style={{ color: "#ef4444", marginLeft: "2px" }}>*</span></label>
@@ -427,12 +516,12 @@ const TripMIS = () => {
                         <input className="form-control" style={{ fontSize: "0.85rem", padding: "8px" }} placeholder="LR No" value={parcel.lrNo} onChange={e => { const newParcels = [...tripListForm.parcels]; newParcels[idx].lrNo = e.target.value; setTripListForm({ ...tripListForm, parcels: newParcels }); }} required />
                       </div>
                       <div>
-                        <label style={{ fontSize: "0.75rem", color: "#6b7280", fontWeight: "600", textTransform: "uppercase", marginBottom: "4px", display: "block" }}>From</label>
-                        <input className="form-control" style={{ fontSize: "0.85rem", padding: "8px" }} placeholder="From" value={parcel.origin} onChange={e => { const newParcels = [...tripListForm.parcels]; newParcels[idx].origin = formatAllCaps(e.target.value); setTripListForm({ ...tripListForm, parcels: newParcels }); }} required />
+                        <label style={{ fontSize: "0.75rem", color: "#6b7280", fontWeight: "600", textTransform: "uppercase", marginBottom: "4px", display: "block" }}>LR Origin (From)</label>
+                        <input className="form-control" style={{ fontSize: "0.85rem", padding: "8px" }} placeholder="LR Origin (or blank for Trip Origin)" value={parcel.origin} onChange={e => { const newParcels = [...tripListForm.parcels]; newParcels[idx].origin = formatAllCaps(e.target.value); setTripListForm({ ...tripListForm, parcels: newParcels }); }} required />
                       </div>
                       <div>
-                        <label style={{ fontSize: "0.75rem", color: "#6b7280", fontWeight: "600", textTransform: "uppercase", marginBottom: "4px", display: "block" }}>To</label>
-                        <input className="form-control" style={{ fontSize: "0.85rem", padding: "8px" }} placeholder="To" value={parcel.destination} onChange={e => { const newParcels = [...tripListForm.parcels]; newParcels[idx].destination = formatAllCaps(e.target.value); setTripListForm({ ...tripListForm, parcels: newParcels }); }} required />
+                        <label style={{ fontSize: "0.75rem", color: "#6b7280", fontWeight: "600", textTransform: "uppercase", marginBottom: "4px", display: "block" }}>LR Destination (To)</label>
+                        <input className="form-control" style={{ fontSize: "0.85rem", padding: "8px" }} placeholder="LR Dest (or blank for Trip Dest)" value={parcel.destination} onChange={e => { const newParcels = [...tripListForm.parcels]; newParcels[idx].destination = formatAllCaps(e.target.value); setTripListForm({ ...tripListForm, parcels: newParcels }); }} required />
                       </div>
                       <div>
                         <label style={{ fontSize: "0.75rem", color: "#6b7280", fontWeight: "600", textTransform: "uppercase", marginBottom: "4px", display: "block" }}>Consignor</label>
@@ -504,15 +593,29 @@ const TripMIS = () => {
           <Table
             loading={false}
             headers={[
-              "Trip No", "Client Name", "Vehicle Details", "Mode", "Parcels (LRs)", "Total Box", "Total Weight",
-              <div style={{ textAlign: "center", lineHeight: "1.2" }}>Total Freight<br /><span style={{ fontSize: "0.65rem", color: "#6b7280" }}>Payment Mode</span></div>,
+              "Trip No & Route", "Client Name", "Vehicle Details", "Parcels & LR Details", "Total Box", "Total Weight",
+              user?.role === 'SuperAdmin' ? (
+                <div style={{ textAlign: "center", lineHeight: "1.2" }}>Total Freight<br /><span style={{ fontSize: "0.65rem", color: "#6b7280" }}>Payment Mode</span></div>
+              ) : "Total Freight",
               "Status", "Remarks", "Created Date", ...(user?.role === 'Vendor' ? [] : ["Actions"])
             ]}
             data={filteredEntries}
             emptyMessage="No trip MIS entries added yet. Click 'Add Trip MIS Entry' to start."
             renderRow={(item, idx) => (
               <tr key={idx} style={{ display: printOnlyId && printOnlyId !== item.id ? 'none' : '' }}>
-                <td className="font-semibold" style={{ color: "#1e3a8a", whiteSpace: "nowrap" }}>{item.tripNo || "-"}</td>
+                <td className="font-semibold" style={{ color: "#1e3a8a", whiteSpace: "nowrap" }}>
+                  <div style={{ fontSize: "0.9rem", fontWeight: "700" }}>{item.tripNo || "-"}</div>
+                  <div style={{ fontSize: "0.75rem", color: "#475569", fontWeight: "600", marginTop: "4px", display: "flex", alignItems: "center", gap: "4px" }}>
+                    <span>{item.origin || "-"}</span>
+                    <span style={{ color: "#94a3b8" }}>➔</span>
+                    <span>{item.destination || "-"}</span>
+                  </div>
+                  {item.date && (
+                    <div style={{ fontSize: "0.7rem", color: "#64748b", fontWeight: "normal", marginTop: "2px" }}>
+                      Date: {item.date ? formatDate(item.date) : "-"}
+                    </div>
+                  )}
+                </td>
                 <td className="font-semibold" style={{ whiteSpace: "nowrap" }}>
                   {item.clientName || "-"}
                   {isAdminOrSuperAdmin && (
@@ -527,62 +630,83 @@ const TripMIS = () => {
                   </div>
                   <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{item.vehicleType}</div>
                 </td>
-                <td>
-                  <span style={{
-                    padding: "2px 8px", borderRadius: "12px", fontSize: "0.75rem", fontWeight: "600", textTransform: "uppercase",
-                    background: item.mode === 'Normal' ? '#f1f5f9' : item.mode === 'Special' ? '#f3e8ff' : '#fef3c7',
-                    color: item.mode === 'Normal' ? '#475569' : item.mode === 'Special' ? '#7e22ce' : '#b45309'
-                  }}>
-                    {item.mode}
-                  </span>
-                </td>
-                <td>
-                  <div style={{ fontSize: "0.8rem", color: "var(--text-dark)", maxHeight: "60px", overflowY: "auto" }}>
-                    {item.parcels?.map((p, i) => (
-                      <div key={i}><strong className="text-primary">{p.lrNo}</strong> <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>({p.origin?.substring(0, 6)}-{p.destination?.substring(0, 6)})</span></div>
-                    )) || "-"}
+                <td style={{ padding: 0, minWidth: "640px" }}>
+                  <div style={{ margin: "10px", border: "1px solid #e2e8f0", borderRadius: "8px", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.05)", overflowX: "auto" }}>
+                    <table style={{ width: "100%", fontSize: "0.75rem", borderCollapse: "collapse", textAlign: "left" }}>
+                      <thead style={{ background: "#f8fafc", position: "sticky", top: 0, zIndex: 1 }}>
+                        <tr>
+                          <th style={{ padding: "8px 12px", color: "#475569", fontWeight: 600, borderBottom: "1px solid #e2e8f0", whiteSpace: "nowrap" }}>LR NO</th>
+                          <th style={{ padding: "8px 12px", color: "#475569", fontWeight: 600, borderBottom: "1px solid #e2e8f0", whiteSpace: "nowrap" }}>ROUTE</th>
+                          <th style={{ padding: "8px 12px", color: "#475569", fontWeight: 600, borderBottom: "1px solid #e2e8f0", whiteSpace: "nowrap" }}>PARTICULAR (PARTY)</th>
+                          <th style={{ padding: "8px 12px", color: "#475569", fontWeight: 600, borderBottom: "1px solid #e2e8f0", whiteSpace: "nowrap" }}>MODE</th>
+                          <th style={{ padding: "8px 12px", color: "#475569", fontWeight: 600, borderBottom: "1px solid #e2e8f0", whiteSpace: "nowrap", textAlign: "center" }}>BOX</th>
+                          <th style={{ padding: "8px 12px", color: "#475569", fontWeight: 600, borderBottom: "1px solid #e2e8f0", whiteSpace: "nowrap", textAlign: "right" }}>WEIGHT</th>
+                          <th style={{ padding: "8px 12px", color: "#475569", fontWeight: 600, borderBottom: "1px solid #e2e8f0", whiteSpace: "nowrap", textAlign: "right" }}>OTH (₹)</th>
+                          <th style={{ padding: "8px 12px", color: "#475569", fontWeight: 600, borderBottom: "1px solid #e2e8f0", whiteSpace: "nowrap", textAlign: "right" }}>AMT (₹)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {((item.parcels && item.parcels.length > 0) ? item.parcels : [{
+                          lrNo: item.lrNo || "-",
+                          origin: item.origin || "-",
+                          destination: item.destination || "-",
+                          consignor: item.consignor || "-",
+                          consignee: item.consignee || "-",
+                          mode: item.mode || "-",
+                          box: item.box || "-",
+                          weight: item.weight || "-",
+                          freight: item.freight || "0"
+                        }]).map((p, i, arr) => {
+                          const oth = (parseFloat(p.pickup) || 0) + (parseFloat(p.delivery) || 0) + (parseFloat(p.special) || 0) + (parseFloat(p.other) || 0);
+                          const amt = parseFloat(p.freight || item.freight || 0);
+                          return (
+                            <tr key={i} style={{ borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none", transition: "background 0.2s" }} onMouseOver={e => e.currentTarget.style.background = "#f8fafc"} onMouseOut={e => e.currentTarget.style.background = "transparent"}>
+                              <td style={{ padding: "8px 12px", fontWeight: "600", color: "#1e3a8a", whiteSpace: "nowrap" }}>{p.lrNo || item.lrNo || "-"}</td>
+                              <td style={{ padding: "8px 12px", color: "#334155", whiteSpace: "nowrap" }}>{p.origin || item.origin || "-"} <span style={{ color: "#94a3b8" }}>→</span> {p.destination || item.destination || "-"}</td>
+                              <td style={{ padding: "8px 12px", color: "#475569" }}>{p.consignor || item.consignor || "-"} <span style={{ color: "#94a3b8" }}>→</span> {p.consignee || item.consignee || "-"}</td>
+                              <td style={{ padding: "8px 12px", color: "#475569", whiteSpace: "nowrap" }}>{p.mode || item.mode || "Normal"}</td>
+                              <td style={{ padding: "8px 12px", color: "#475569", textAlign: "center" }}>{p.box || item.box || "0"}</td>
+                              <td style={{ padding: "8px 12px", color: "#475569", whiteSpace: "nowrap", textAlign: "right" }}>{p.weight || item.weight || "0"} kg</td>
+                              <td style={{ padding: "8px 12px", color: "#64748b", textAlign: "right" }}>
+                                {oth > 0 ? (
+                                  <span title={`Pickup: ₹${p.pickup||0}, Delivery: ₹${p.delivery||0}, Special: ₹${p.special||0}, Other: ₹${p.other||0}`}>
+                                    {oth.toFixed(2)}
+                                  </span>
+                                ) : "0"}
+                              </td>
+                              <td style={{ padding: "8px 12px", fontWeight: "600", color: "#10b981", textAlign: "right" }}>{amt.toFixed(2)}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 </td>
-                <td>{item.box || item.parcels?.reduce((s, p) => s + (parseInt(p.box) || 0), 0) || "-"}</td>
-                <td style={{ whiteSpace: "nowrap" }}>{item.weight || item.parcels?.reduce((s, p) => s + (parseFloat(p.weight) || 0), 0) || "-"} kg</td>
+                <td>{item.box || item.parcels?.reduce((s, p) => s + (parseInt(p.box) || 0), 0) || "0"}</td>
+                <td style={{ whiteSpace: "nowrap" }}>{item.weight || item.parcels?.reduce((s, p) => s + (parseFloat(p.weight) || 0), 0) || "0"} kg</td>
                 <td style={{ whiteSpace: "nowrap" }}>
                   <div style={{ fontWeight: "600", color: "#10b981", marginBottom: "4px", display: "flex", alignItems: "center", gap: "4px" }}>
                     <RupeeIcon size={14} />{((parseFloat(item.freight) || 0) * 1.18).toFixed(2)}
                     <span style={{ fontSize: "0.6rem", color: "#6b7280" }}>(Inc 18% GST)</span>
                   </div>
-                  {(parseFloat(item.paidAmount) > 0 && item.payment !== 'Paid') && (
-                    <div style={{ fontSize: "0.75rem", color: "#f59e0b", marginBottom: "6px", fontWeight: "600" }}>
-                      Paid: {item.paidAmount} | Rem: {(((parseFloat(item.freight) || 0) * 1.18) - parseFloat(item.paidAmount)).toFixed(2)}
-                    </div>
+                  {user?.role === 'SuperAdmin' && (
+                    <>
+                      {(parseFloat(item.paidAmount) > 0 && item.payment !== 'Paid') && (
+                        <div style={{ fontSize: "0.75rem", color: "#f59e0b", marginBottom: "6px", fontWeight: "600" }}>
+                          Paid: {item.paidAmount} | Rem: {(((parseFloat(item.freight) || 0) * 1.18) - parseFloat(item.paidAmount)).toFixed(2)}
+                        </div>
+                      )}
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <span style={{
+                          padding: "2px 8px", borderRadius: "12px", fontSize: "0.65rem", fontWeight: "600",
+                          background: item.payment === 'Paid' ? '#dcfce7' : item.payment === 'To Pay' ? '#fee2e2' : '#e0e7ff',
+                          color: item.payment === 'Paid' ? '#15803d' : item.payment === 'To Pay' ? '#b91c1c' : '#4338ca'
+                        }}>
+                          {item.payment}
+                        </span>
+                      </div>
+                    </>
                   )}
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    <span style={{
-                      padding: "2px 8px", borderRadius: "12px", fontSize: "0.65rem", fontWeight: "600",
-                      background: item.payment === 'Paid' ? '#dcfce7' : item.payment === 'To Pay' ? '#fee2e2' : '#e0e7ff',
-                      color: item.payment === 'Paid' ? '#15803d' : item.payment === 'To Pay' ? '#b91c1c' : '#4338ca'
-                    }}>
-                      {item.payment}
-                    </span>
-                    {item.payment !== 'Paid' && (
-                      <button
-                        onClick={() => {
-                          const totalWithGst = (parseFloat(item.freight) || 0) * 1.18;
-                          const paid = parseFloat(item.paidAmount) || 0;
-                          setPaymentModal({ isOpen: true, idx, maxAmount: totalWithGst - paid, amount: (totalWithGst - paid).toFixed(2) });
-                        }}
-                        style={{
-                          background: "#10b981", color: "white", border: "none", borderRadius: "6px",
-                          fontSize: "0.75rem", padding: "6px 12px", cursor: "pointer", fontWeight: "600",
-                          boxShadow: "0 2px 4px rgba(16, 185, 129, 0.2)", transition: "all 0.2s"
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
-                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                        title="Mark as Paid"
-                      >
-                        Mark Paid
-                      </button>
-                    )}
-                  </div>
                 </td>
                 <td>
                   <span style={{
@@ -651,7 +775,7 @@ const TripMIS = () => {
                 {user?.role !== 'Vendor' && (
                   <td style={{ textAlign: "right" }}>
                     <div className="action-buttons-wrapper">
-                      {isAdminOrSuperAdmin && (
+                      {(isAdminOrSuperAdmin || user?.role === 'Client') && (
                         <>
                           {item.approvalStatus !== 'Approved' && (
                             <button onClick={async () => {
@@ -740,17 +864,39 @@ const TripMIS = () => {
                           <Edit size={14} /> Edit
                         </button>
                       )}
-                      {isAdminOrSuperAdmin && (
-                        <button
-                          onClick={() => {
-                            localStorage.setItem("printSingleTripData", JSON.stringify(item));
-                            window.open(`/print-single-trip/mis-print`, '_blank');
-                          }}
-                          className="action-btn action-btn-light"
-                          title="Print Single Trip"
-                        >
-                          <Printer size={14} /> Print
-                        </button>
+                      {(isAdminOrSuperAdmin || user?.role === 'Client' || user?.role?.toLowerCase() === 'client') && (
+                        <>
+                          <button
+                            onClick={() => {
+                              localStorage.setItem("printSingleTripData", JSON.stringify(item));
+                              window.open(`/print-single-trip/mis-print`, '_blank');
+                            }}
+                            className="action-btn action-btn-light"
+                            title="Print Single Trip"
+                          >
+                            <Printer size={14} /> Print
+                          </button>
+                          <button
+                            onClick={() => handleShareWhatsApp(item)}
+                            className="action-btn"
+                            style={{
+                              background: "#25D366",
+                              color: "#ffffff",
+                              border: "none",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              fontWeight: "600",
+                              boxShadow: "0 2px 4px rgba(37, 211, 102, 0.2)"
+                            }}
+                            title="Share on WhatsApp"
+                          >
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                              <path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.124.551 4.195 1.597 6.015L.175 23.518l5.62-1.474c1.745.955 3.693 1.458 5.679 1.458 6.646 0 12.031-5.385 12.031-12.031S18.677 0 12.031 0zm6.541 17.382c-.279.791-1.637 1.478-2.28 1.558-.551.069-1.258.199-3.95-1.025-3.447-1.564-5.69-5.111-5.859-5.337-.179-.229-1.401-1.865-1.401-3.565 0-1.7 1.054-2.584 1.343-2.912.288-.328.627-.408.835-.408.209 0 .418 0 .597.01.199.01.467-.069.736.567.279.646.955 2.337 1.044 2.506.089.179.149.388.04.597-.109.209-.169.348-.338.547-.169.199-.358.418-.507.577-.169.179-.348.378-.149.716.199.338.885 1.452 1.89 2.347 1.293 1.154 2.367 1.512 2.695 1.671.328.159.527.129.726-.089.199-.219.865-1.004 1.104-1.353.239-.348.477-.288.785-.169.308.119 1.949.925 2.288 1.094.338.169.567.259.656.408.089.149.089.865-.19 1.656z" />
+                            </svg>
+                            <span>Share</span>
+                          </button>
+                        </>
                       )}
                     </div>
                   </td>
@@ -804,7 +950,7 @@ const TripMIS = () => {
         )}
 
         {/* Communication & Remarks Modal */}
-        {activeRemarksModal && (
+        {activeRemarksModal && createPortal(
           <div style={{
             position: "fixed",
             top: 0,
@@ -1091,7 +1237,7 @@ const TripMIS = () => {
               <div ref={remarksEndRef} />
             </div>
           </div>
-        )}
+        , document.body)}
       </div>
 
       <div className="print-only">
@@ -1172,6 +1318,71 @@ const TripMIS = () => {
           </tbody>
         </table>
       </div>
+
+      {showQuickAddClient && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 10000, backgroundColor: "rgba(0,0,0,0.6)",
+          display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)"
+        }}>
+          <div style={{ background: "white", padding: "1.75rem", borderRadius: "12px", width: "90%", maxWidth: "420px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", border: "1px solid #e2e8f0" }}>
+            <h4 style={{ margin: "0 0 0.5rem 0", color: "#0f172a", fontSize: "1.1rem", fontWeight: "700" }}>Add New Client</h4>
+            <p style={{ fontSize: "0.85rem", color: "#64748b", marginBottom: "1.25rem", lineHeight: 1.4 }}>
+              Enter the client name below. The client will be saved to the database and an incomplete notification will be sent to Admin to fill in missing details (GST, Address, Contact).
+            </p>
+            <label style={{ display: "block", fontSize: "0.8rem", fontWeight: "600", color: "#475569", marginBottom: "4px" }}>
+              Client Name <span style={{ color: "#ef4444" }}>*</span>
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="e.g. RELIANCE LOGISTICS"
+              value={newClientName}
+              onChange={e => setNewClientName(formatAllCaps(e.target.value))}
+              style={{ width: "100%", marginBottom: "1.5rem", padding: "0.65rem", border: "1px solid #cbd5e1", borderRadius: "6px", fontSize: "0.95rem" }}
+              autoFocus
+            />
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
+              <button
+                type="button"
+                onClick={() => { setShowQuickAddClient(false); setNewClientName(''); }}
+                style={{ padding: "0.55rem 1.15rem", border: "1px solid #cbd5e1", background: "white", borderRadius: "6px", cursor: "pointer", fontWeight: "600", color: "#64748b" }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!newClientName.trim()) {
+                    addToast("Please enter a client name", "error");
+                    return;
+                  }
+                  try {
+                    const res = await axios.post(`${API}/clients`, {
+                      name: formatAllCaps(newClientName.trim()),
+                      status: 'Active',
+                      isIncomplete: true
+                    }, { headers: { Authorization: `Bearer ${token}` } });
+                    if (res.data.success) {
+                      const addedClient = res.data.data;
+                      setClientsList(prev => [addedClient, ...prev]);
+                      setTripListForm(prev => ({ ...prev, clientName: addedClient.name }));
+                      setShowQuickAddClient(false);
+                      setNewClientName('');
+                      addToast("Client added! Admin notified to complete missing data.", "success");
+                    }
+                  } catch (err) {
+                    console.error(err);
+                    addToast("Failed to create client", "error");
+                  }
+                }}
+                style={{ padding: "0.55rem 1.25rem", background: "#4F46E5", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "600", boxShadow: "0 2px 4px rgba(79, 70, 229, 0.2)" }}
+              >
+                Save & Select
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

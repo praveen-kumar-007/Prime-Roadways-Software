@@ -2,10 +2,10 @@ const { db } = require("../config/database");
 
 /**
  * Gets the next sequential number for a given collection prefix.
- * e.g., getNextSequence("TRP") returns "TRP-1", "TRP-2", etc.
+ * e.g., getNextSequence("PR") returns "PR-1", "PR-2", etc.
  * Uses a Firestore transaction on the 'counters' document in the 'metadata' collection.
  *
- * @param {string} prefix - The prefix for the sequence (e.g., 'TRP', 'LR', 'BILL')
+ * @param {string} prefix - The prefix for the sequence (e.g., 'PR', 'LR', 'BILL')
  * @returns {Promise<string>} The next formatted sequence number
  */
 async function getNextSequence(prefix) {

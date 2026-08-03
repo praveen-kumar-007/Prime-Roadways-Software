@@ -123,7 +123,23 @@ const PrintSingleVendor = () => {
           <ArrowLeft size={18} className="mr-2" /> Back
         </button>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-          <input type="text" value={signName} onChange={(e) => setSignName(e.target.value)} placeholder="Sign Name" style={{ padding: "8px 12px", border: "1px solid #cbd5e1", borderRadius: "6px", fontSize: "0.85rem", width: "160px", outline: "none" }} />
+          <input 
+            type="text" 
+            value={signName} 
+            onChange={(e) => setSignName(e.target.value)} 
+            disabled={user?.role !== 'Admin' && user?.role !== 'SuperAdmin'}
+            placeholder="Sign Name" 
+            style={{ 
+              padding: "8px 12px", 
+              border: "1px solid #cbd5e1", 
+              borderRadius: "6px", 
+              fontSize: "0.85rem", 
+              width: "160px", 
+              outline: "none",
+              background: (user?.role === 'Admin' || user?.role === 'SuperAdmin') ? "#ffffff" : "#f1f5f9",
+              cursor: (user?.role === 'Admin' || user?.role === 'SuperAdmin') ? "text" : "not-allowed"
+            }} 
+          />
           <button className="btn" style={{ background: "white", border: "1px solid #cbd5e1" }} onClick={() => window.print()}>
             <Printer size={18} className="mr-2" /> Print Page
           </button>
@@ -159,11 +175,17 @@ const PrintSingleVendor = () => {
                       <span>GST: 07BBCPP8550Q1ZX</span><span>|</span><span>PAN: BBCPP8550Q</span>
                     </div>
                   </div>
-                  <div style={{ width: "120px", flexShrink: 0, textAlign: "right", alignSelf: "flex-start" }}>
-                      <div style={{ border: "2px solid #1e293b", padding: "6px 10px", display: "inline-block", background: "#f8fafc", borderRadius: "6px", boxShadow: "2px 2px 0px #1e293b", minWidth: "100px", textAlign: "center" }}>
-                        <div style={{ fontSize: "0.65rem", fontWeight: "700", color: "#475569", marginBottom: "2px", letterSpacing: "1px" }}>DATE CREATED</div>
-                        <div style={{ fontSize: "1.1rem", fontWeight: "800", color: "#e11d48", minHeight: "1.5rem" }}>{vendorMis?.createdAt ? formatDate(vendorMis.createdAt) : "-"}</div>
-                      </div>
+                  <div style={{ width: "140px", flexShrink: 0, display: "flex", justifyContent: "flex-end", alignSelf: "flex-start" }}>
+                    <table style={{ borderCollapse: "collapse", border: "2px solid #1e293b", borderRadius: "6px", overflow: "hidden", backgroundColor: "#f8fafc", width: "120px", textAlign: "center", margin: 0 }}>
+                      <tbody>
+                        <tr>
+                          <td style={{ padding: "6px 8px 2px 8px", fontSize: "0.65rem", fontWeight: "700", color: "#475569", letterSpacing: "1px", border: "none" }}>DATE CREATED</td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: "0px 8px 6px 8px", fontSize: "1.1rem", fontWeight: "800", color: "#e11d48", border: "none" }}>{vendorMis?.createdAt ? formatDate(vendorMis.createdAt) : "-"}</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
 

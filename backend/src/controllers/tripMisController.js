@@ -7,7 +7,18 @@ exports.getTripMis = async (req, res) => {
     const isAdmin = user.role === 'Admin' || user.role === 'SuperAdmin';
     
     let query = {};
-    if (!isAdmin) {
+    if (user.role === 'Client' || user.role?.toLowerCase() === 'client') {
+      const cleanName = (user.name || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const clientNameRegex = new RegExp(cleanName, 'i');
+      query = {
+        $or: [
+          { clientName: clientNameRegex },
+          { client: clientNameRegex },
+          { client_name: clientNameRegex },
+          { clientEmail: user.email?.toLowerCase() }
+        ]
+      };
+    } else if (!isAdmin) {
       query.createdBy = user.id;
     }
 
@@ -19,6 +30,7 @@ exports.getTripMis = async (req, res) => {
     // Map to include id for frontend compatibility
     const formattedRecords = records.map(r => ({
       ...r,
+      tripNo: (r.tripNo || '').replace(/^TRP-/i, 'PR-'),
       id: r._id.toString()
     }));
 
@@ -42,9 +54,9 @@ exports.createTripMis = async (req, res) => {
     const isAdmin = user.role === 'Admin' || user.role === 'SuperAdmin';
     payload.approvalStatus = isAdmin ? 'Approved' : 'Pending';
 
-    if (!payload.tripNo) {
+    if (!payload.tripNo || payload.tripNo.startsWith('TRP-')) {
       const count = await getDb().collection('trip_mis').countDocuments();
-      payload.tripNo = `TRP-${1000 + count + 1}`;
+      payload.tripNo = `PR-${1000 + count + 1}`;
     }
 
     const result = await getDb().collection('trip_mis').insertOne(payload);
@@ -68,6 +80,19 @@ exports.updateTripMis = async (req, res) => {
     if (!doc) return res.status(404).json({ success: false, message: 'Not found' });
     
     const isAdmin = user.role === 'Admin' || user.role === 'SuperAdmin';
+    const isClient = user.role === 'Client' || user.role?.toLowerCase() === 'client';
+
+    if (isClient) {
+      const updateData = {};
+      if (req.body.approvalStatus) {
+        updateData.approvalStatus = req.body.approvalStatus;
+      }
+      await getDb().collection('trip_mis').updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updateData }
+      );
+      return res.status(200).json({ success: true, message: 'Trip MIS approval status updated successfully' });
+    }
 
     if (!isAdmin && req.body.approvalStatus && req.body.approvalStatus !== doc.approvalStatus) {
       return res.status(403).json({ success: false, message: 'You are not allowed to approve/reject entries.' });
@@ -101,7 +126,9 @@ exports.deleteTripMis = async (req, res) => {
     if (!doc) return res.status(404).json({ success: false, message: 'Not found' });
     
     const isAdmin = user.role === 'Admin' || user.role === 'SuperAdmin';
-
+    if (user.role === 'Client' || user.role?.toLowerCase() === 'client') {
+      return res.status(403).json({ success: false, message: 'Clients are not authorized to delete entries.' });
+    }
     if (!isAdmin && doc.createdBy !== user.id) {
       return res.status(403).json({ success: false, message: 'Unauthorized to delete this entry.' });
     }
@@ -128,11 +155,11 @@ exports.addTripMisRemark = async (req, res) => {
     if (!doc) return res.status(404).json({ success: false, message: 'Not found' });
 
     const isAdmin = user.role === 'Admin' || user.role === 'SuperAdmin';
-    if (!isAdmin && doc.createdBy !== user.id) {
+    const isClient = user.role === 'Client' || user.role?.toLowerCase() === 'client';
+    const isClientMatch = isClient && (doc.client?.toLowerCase() === user.name?.toLowerCase() || doc.clientEmail?.toLowerCase() === user.email?.toLowerCase());
+
+    if (!isAdmin && !isClientMatch && doc.createdBy !== user.id) {
       return res.status(403).json({ success: false, message: 'Unauthorized to comment on this entry.' });
-    }
-    if (!isAdmin && doc.approvalStatus === 'Approved') {
-      return res.status(403).json({ success: false, message: 'Remarks are closed because this entry is Approved.' });
     }
 
     const newRemark = {

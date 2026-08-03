@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
+import { createPortal } from "react-dom";
 import axios from "axios";
 import Papa from "papaparse";
 import Table from "../components/Table";
@@ -80,7 +81,7 @@ const VendorMIS = () => {
   }, 0);
 
   const handleExportCSV = () => {
-    let csv = "Vendor Name,Handover To,Date,From,To,Vehicle No,Particular,Mode,Amount,Others,Status,Total Amount,Approval Status,Created Date\n";
+    let csv = "Vendor name,Handover to,Date,From,To,Veh no,Particular,Mode,Amount,Others,Status,Total amount,Approval status,Created at\n";
     filteredEntries.forEach(item => {
       if (item.details && item.details.length > 0) {
         item.details.forEach((d, dIdx) => {
@@ -109,7 +110,7 @@ const VendorMIS = () => {
   const fileInputRef = useRef(null);
 
   const handleSampleCSV = () => {
-    const csv = "Created At,Vendor Name,Handover To,Date,From,To,Vehicle No,Particular,Mode,Amount,Others,Status\n2026-08-01,ABC Logistics,John Doe,2026-08-01,Delhi,Mumbai,DL1A1234,Transport,Road,15000,500,Pending\n";
+    const csv = "Vendor name,Handover to,Date,From,To,Veh no,Particular,Mode,Amount,Others,Status,Total amount,Approval status,Created at\nABC Logistics,John Doe,2026-08-01,Delhi,Mumbai,DL1A1234,Transport,Road,15000,500,Pending,15500,Approved,2026-08-01\n";
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -139,22 +140,22 @@ const VendorMIS = () => {
 
         data.forEach(row => {
           // Fallback vendor name if empty
-          const vendorName = row['Vendor Name'] || `Unknown Vendor ${Math.floor(Math.random() * 1000)}`;
+          const vendorName = row['Vendor name'] || `Unknown Vendor ${Math.floor(Math.random() * 1000)}`;
           if (!vendorsMap[vendorName]) {
             vendorsMap[vendorName] = {
               vendorName: vendorName,
-              createdAt: formatDate(row['Created At'] || new Date()),
+              createdAt: row['Created at'] ? formatDate(row['Created at']) : formatDate(new Date()),
               details: []
             };
           }
 
-          if (row['Date'] || row['Vehicle No']) {
+          if (row['Date'] || row['Veh no']) {
             vendorsMap[vendorName].details.push({
-              handoverTo: row['Handover To'] || '',
+              handoverTo: row['Handover to'] || '',
               date: formatDate(row['Date'] || new Date()),
               from: row['From'] || '',
               to: row['To'] || '',
-              vehicleNo: row['Vehicle No'] || '',
+              vehicleNo: row['Veh no'] || '',
               particular: row['Particular'] || '',
               mode: row['Mode'] || 'Road',
               amount: row['Amount'] || '0',
@@ -684,7 +685,7 @@ const VendorMIS = () => {
       </div>
 
       {/* Communication & Remarks Modal */}
-      {activeRemarksModal && (
+      {activeRemarksModal && createPortal(
         <div style={{
           position: "fixed",
           top: 0,
@@ -971,7 +972,7 @@ const VendorMIS = () => {
             )}
           </div>
         </div>
-      )}
+      , document.body)}
 
       <div className="print-only">
         <>

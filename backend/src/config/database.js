@@ -23,6 +23,20 @@ async function initMongo() {
 
     dbConnection.db = client.db(dbName);
     console.log(`[MongoDB] Connected successfully to database: ${dbName}`);
+
+    try {
+      const collection = dbConnection.db.collection('trip_mis');
+      const recordsToMigrate = await collection.find({ tripNo: { $regex: /^TRP-/i } }).toArray();
+      for (const rec of recordsToMigrate) {
+        const newTripNo = rec.tripNo.replace(/^TRP-/i, 'PR-');
+        await collection.updateOne({ _id: rec._id }, { $set: { tripNo: newTripNo } });
+      }
+      if (recordsToMigrate.length > 0) {
+        console.log(`[MongoDB] Automatically migrated ${recordsToMigrate.length} trip_mis records from TRP- to PR-`);
+      }
+    } catch (migErr) {
+      console.error("[MongoDB] Migration warning:", migErr.message);
+    }
   } catch (err) {
     console.error("[MongoDB] Connection error:", err.message);
     throw err;

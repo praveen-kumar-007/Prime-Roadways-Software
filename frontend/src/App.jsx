@@ -7,6 +7,8 @@ import Dashboard from './pages/Dashboard';
 import TripMIS from './pages/TripMIS';
 import VendorVehicleMIS from './pages/VendorVehicleMIS';
 import IAM from './pages/IAM';
+import Clients from './pages/Clients';
+import Vendors from './pages/Vendors';
 import PrintSingleTrip from './pages/PrintSingleTrip';
 import PrintSingleVendor from './pages/PrintSingleVendor';
 import { AuthProvider } from './context/AuthContext';
@@ -43,6 +45,8 @@ function App() {
                     <Route index element={<Dashboard />} />
                     <Route path="trip-mis" element={<TripMIS />} />
                     <Route path="vendor-mis" element={<VendorVehicleMIS />} />
+                    <Route path="vendors" element={<Vendors />} />
+                    <Route path="clients" element={<Clients />} />
                     <Route path="iam" element={<IAM />} />
                   </Route>
                   <Route path="/print-single-trip/:index" element={<ProtectedRoute><PrintSingleTrip /></ProtectedRoute>} />

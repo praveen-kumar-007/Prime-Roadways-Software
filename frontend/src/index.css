@@ -683,10 +683,26 @@ textarea.form-control {
 
 /* Action Buttons for MIS Tables */
 .action-buttons-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  align-items: stretch;
+  justify-items: stretch;
+  min-width: 240px;
+}
+
+@media (max-width: 1200px) {
+  .action-buttons-wrapper {
+    grid-template-columns: repeat(2, 1fr);
+    min-width: 160px;
+  }
+}
+
+@media (max-width: 768px) {
+  .action-buttons-wrapper {
+    grid-template-columns: 1fr;
+    min-width: 100px;
+  }
 }
 
 .action-btn {
@@ -704,6 +720,8 @@ textarea.form-control {
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   font-family: 'Inter', sans-serif;
   letter-spacing: 0.01em;
+  white-space: nowrap;
+  width: 100%;
 }
 
 .action-btn:hover {
