@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const { initMongo } = require('./src/config/database');
 
 const { login, getMe } = require('./src/controllers/authController');
@@ -29,6 +30,14 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+// Serve static files (favicon, etc.)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Serve favicon explicitly
+app.get('/favicon.ico', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'favicon.jpg'));
+});
 
 // Mock endpoints for MultiMarg UI port
 app.get('/api/settings/config', (req, res) => {
