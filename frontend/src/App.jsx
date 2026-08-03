@@ -6,6 +6,8 @@ import Dashboard from './pages/Dashboard';
 import TripMIS from './pages/TripMIS';
 import VendorVehicleMIS from './pages/VendorVehicleMIS';
 import IAM from './pages/IAM';
+import PrintSingleTrip from './pages/PrintSingleTrip';
+import PrintSingleVendor from './pages/PrintSingleVendor';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { SettingsProvider } from './context/SettingsContext';
@@ -42,6 +44,8 @@ function App() {
                     <Route path="vendor-mis" element={<VendorVehicleMIS />} />
                     <Route path="iam" element={<IAM />} />
                   </Route>
+                  <Route path="/print-single-trip/:index" element={<ProtectedRoute><PrintSingleTrip /></ProtectedRoute>} />
+                  <Route path="/print-single-vendor/:index" element={<ProtectedRoute><PrintSingleVendor /></ProtectedRoute>} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </NotificationProvider>

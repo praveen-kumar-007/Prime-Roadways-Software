@@ -81,7 +81,7 @@ const Topbar = ({ toggleSidebar, isSidebarOpen, hasSidebar = true }) => {
             <Menu size={24} />
           </button>
         )}
-        <img src="/IMG-20260803-WA0000.jpg" alt="Logo" style={{ height: '40px', width: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+        <img src="/IMG-20260803-WA0000.jpg" alt="Logo" style={{ height: '40px', width: '40px', borderRadius: '4px', objectFit: 'cover' }} />
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }} className="topbar-right">

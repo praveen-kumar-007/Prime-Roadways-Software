@@ -7,7 +7,8 @@ exports.generateToken = (user) => {
     { 
       id: user._id || user.id, 
       email: user.email, 
-      role: user.role 
+      role: user.role,
+      name: user.name
     },
     JWT_SECRET,
     { expiresIn: '24h' }

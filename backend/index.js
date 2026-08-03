@@ -39,7 +39,7 @@ app.get('/favicon.ico', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'favicon.jpg'));
 });
 
-// Mock endpoints for MultiMarg UI port
+// Mock endpoints for Prime Roadways UI port
 app.get('/api/settings/config', (req, res) => {
   res.json({ success: true, data: null });
 });

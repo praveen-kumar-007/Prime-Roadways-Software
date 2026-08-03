@@ -176,6 +176,7 @@ const VendorMIS = () => {
   const [showVendorMisForm, setShowVendorMisForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editingStatus, setEditingStatus] = useState('');
+  const [printOnlyId, setPrintOnlyId] = useState(null);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -383,7 +384,7 @@ const VendorMIS = () => {
           data={filteredEntries}
           emptyMessage="No Vendor MIS entries added yet. Click 'Add Vendor MIS Entry' to start."
           renderRow={(item, idx) => (
-            <tr key={idx}>
+            <tr key={idx} style={{ display: printOnlyId && printOnlyId !== item.id ? 'none' : '' }}>
               <td className="font-semibold" style={{ color: "#1e3a8a", whiteSpace: "nowrap" }}>
                 {item.vendorName || "-"}
                 {isAdminOrSuperAdmin && (
@@ -479,10 +480,13 @@ const VendorMIS = () => {
                       {item.approvalStatus !== 'Approved' && (
                         <button onClick={async () => {
                           try {
-                            const res = await axios.put(`${API}/vendor-mis/${item.id}`, { approvalStatus: 'Approved' }, { headers: { Authorization: `Bearer ${token}` } });
+                            const updatedDetails = item.details?.map(d => ({...d, status: 'Approved'})) || [];
+                            const payload = { approvalStatus: 'Approved', details: updatedDetails };
+                            const res = await axios.put(`${API}/vendor-mis/${item.id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
                             if(res.data.success) {
                                const newEntries = [...vendorMisEntries];
                                newEntries[idx].approvalStatus = 'Approved';
+                               newEntries[idx].details = updatedDetails;
                                setVendorMisEntries(newEntries);
                                addToast("Entry Approved!", "success");
                             }
@@ -495,10 +499,13 @@ const VendorMIS = () => {
                       {item.approvalStatus !== 'Rejected' && (
                         <button onClick={async () => {
                           try {
-                            const res = await axios.put(`${API}/vendor-mis/${item.id}`, { approvalStatus: 'Rejected' }, { headers: { Authorization: `Bearer ${token}` } });
+                            const updatedDetails = item.details?.map(d => ({...d, status: 'Rejected'})) || [];
+                            const payload = { approvalStatus: 'Rejected', details: updatedDetails };
+                            const res = await axios.put(`${API}/vendor-mis/${item.id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
                             if(res.data.success) {
                                const newEntries = [...vendorMisEntries];
                                newEntries[idx].approvalStatus = 'Rejected';
+                               newEntries[idx].details = updatedDetails;
                                setVendorMisEntries(newEntries);
                                addToast("Entry Rejected", "success");
                             }
@@ -511,10 +518,13 @@ const VendorMIS = () => {
                       {item.approvalStatus !== 'Pending' && (
                         <button onClick={async () => {
                           try {
-                            const res = await axios.put(`${API}/vendor-mis/${item.id}`, { approvalStatus: 'Pending' }, { headers: { Authorization: `Bearer ${token}` } });
+                            const updatedDetails = item.details?.map(d => ({...d, status: 'Pending'})) || [];
+                            const payload = { approvalStatus: 'Pending', details: updatedDetails };
+                            const res = await axios.put(`${API}/vendor-mis/${item.id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
                             if(res.data.success) {
                                const newEntries = [...vendorMisEntries];
                                newEntries[idx].approvalStatus = 'Pending';
+                               newEntries[idx].details = updatedDetails;
                                setVendorMisEntries(newEntries);
                                addToast("Entry Moved to Pending", "success");
                             }
@@ -523,9 +533,25 @@ const VendorMIS = () => {
                           <Clock size={14} /> Pending
                         </button>
                       )}
-                      
-                      <button onClick={async () => {
-                         if(window.confirm("Are you sure you want to delete this Vendor MIS entry?")) {
+                    </>
+                  )}
+                  
+                  {isAdminOrSuperAdmin && (
+                    <button 
+                      onClick={() => {
+                        localStorage.setItem("printSingleVendorData", JSON.stringify(item));
+                        window.open(`/print-single-vendor/mis-print`, '_blank');
+                      }}
+                      className="action-btn action-btn-light"
+                      title="Print Single Vendor MIS"
+                    >
+                      <Printer size={14} /> Print
+                    </button>
+                  )}
+
+                  {isAdminOrSuperAdmin && (
+                    <button onClick={async () => {
+                       if(window.confirm("Are you sure you want to delete this Vendor MIS entry?")) {
                             try {
                                const res = await axios.delete(`${API}/vendor-mis/${item.id}`, { headers: { Authorization: `Bearer ${token}` } });
                                if(res.data.success) {
@@ -539,7 +565,6 @@ const VendorMIS = () => {
                       }} className="action-btn action-btn-secondary">
                         <Trash2 size={14} /> Delete
                       </button>
-                    </>
                   )}
                   {(isAdminOrSuperAdmin || (user?.role === 'Vendor' && item.createdBy === user?.id && item.approvalStatus !== 'Approved')) && (
                     <button onClick={() => {

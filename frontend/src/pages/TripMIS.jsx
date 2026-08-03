@@ -204,6 +204,7 @@ const TripMIS = () => {
   const [editingId, setEditingId] = useState(null);
   const [editingStatus, setEditingStatus] = useState('');
   const [paymentModal, setPaymentModal] = useState({ isOpen: false, idx: null, amount: "", maxAmount: 0 });
+  const [printOnlyId, setPrintOnlyId] = useState(null);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -491,7 +492,7 @@ const TripMIS = () => {
           data={filteredEntries}
           emptyMessage="No trip MIS entries added yet. Click 'Add Trip MIS Entry' to start."
           renderRow={(item, idx) => (
-            <tr key={idx}>
+            <tr key={idx} style={{ display: printOnlyId && printOnlyId !== item.id ? 'none' : '' }}>
               <td className="font-semibold" style={{ color: "#1e3a8a", whiteSpace: "nowrap" }}>{item.tripNo || "-"}</td>
               <td className="font-semibold" style={{ whiteSpace: "nowrap" }}>
                 {item.clientName || "-"}
@@ -581,10 +582,13 @@ const TripMIS = () => {
                       {item.approvalStatus !== 'Approved' && (
                         <button onClick={async () => {
                           try {
-                            const res = await axios.put(`${API}/trip-mis/${item.id}`, { approvalStatus: 'Approved' }, { headers: { Authorization: `Bearer ${token}` } });
+                            const updatedParcels = item.parcels?.map(p => ({...p, status: 'Approved'})) || [];
+                            const payload = { approvalStatus: 'Approved', parcels: updatedParcels };
+                            const res = await axios.put(`${API}/trip-mis/${item.id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
                             if(res.data.success) {
                                const newEntries = [...tripListEntries];
                                newEntries[idx].approvalStatus = 'Approved';
+                               newEntries[idx].parcels = updatedParcels;
                                setTripListEntries(newEntries);
                                addToast("Entry Approved!", "success");
                             }
@@ -597,10 +601,13 @@ const TripMIS = () => {
                       {item.approvalStatus !== 'Rejected' && (
                         <button onClick={async () => {
                           try {
-                            const res = await axios.put(`${API}/trip-mis/${item.id}`, { approvalStatus: 'Rejected' }, { headers: { Authorization: `Bearer ${token}` } });
+                            const updatedParcels = item.parcels?.map(p => ({...p, status: 'Rejected'})) || [];
+                            const payload = { approvalStatus: 'Rejected', parcels: updatedParcels };
+                            const res = await axios.put(`${API}/trip-mis/${item.id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
                             if(res.data.success) {
                                const newEntries = [...tripListEntries];
                                newEntries[idx].approvalStatus = 'Rejected';
+                               newEntries[idx].parcels = updatedParcels;
                                setTripListEntries(newEntries);
                                addToast("Entry Rejected", "success");
                             }
@@ -613,10 +620,13 @@ const TripMIS = () => {
                       {item.approvalStatus !== 'Pending' && (
                         <button onClick={async () => {
                           try {
-                            const res = await axios.put(`${API}/trip-mis/${item.id}`, { approvalStatus: 'Pending' }, { headers: { Authorization: `Bearer ${token}` } });
+                            const updatedParcels = item.parcels?.map(p => ({...p, status: 'Pending'})) || [];
+                            const payload = { approvalStatus: 'Pending', parcels: updatedParcels };
+                            const res = await axios.put(`${API}/trip-mis/${item.id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
                             if(res.data.success) {
                                const newEntries = [...tripListEntries];
                                newEntries[idx].approvalStatus = 'Pending';
+                               newEntries[idx].parcels = updatedParcels;
                                setTripListEntries(newEntries);
                                addToast("Entry Moved to Pending", "success");
                             }
@@ -625,7 +635,13 @@ const TripMIS = () => {
                           <Clock size={14} /> Pending
                         </button>
                       )}
-                      <button onClick={async () => {
+                    </>
+                  )}
+                  
+
+
+                  {isAdminOrSuperAdmin && (
+                    <button onClick={async () => {
                         if (window.confirm("Are you sure you want to delete this Trip MIS entry?")) {
                           try {
                             const res = await axios.delete(`${API}/trip-mis/${item.id}`, { headers: { Authorization: `Bearer ${token}` } });
@@ -638,7 +654,6 @@ const TripMIS = () => {
                       }} className="action-btn action-btn-secondary">
                         <Trash2 size={14} /> Delete
                       </button>
-                    </>
                   )}
                   {(isAdminOrSuperAdmin || (user?.role === 'Vendor' && item.createdBy === user?.id && item.approvalStatus !== 'Approved')) && (
                     <button onClick={() => {
