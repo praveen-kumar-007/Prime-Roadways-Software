@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from './AuthContext';
+import { API_URL } from '../config/api';
 
 export const NotificationContext = createContext();
 
@@ -10,14 +11,14 @@ export const NotificationProvider = ({ children }) => {
   const [totalIncomplete, setTotalIncomplete] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const API = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : "http://localhost:5000/api";
+
 
   const fetchIncompleteItems = async () => {
     if (!user) return; // Wait for user to be logged in
     
     try {
       setLoading(true);
-      const res = await axios.get(`${API}/notifications/incomplete`);
+      const res = await axios.get(`${API_URL}/notifications/incomplete`);
       if (res.data.success) {
         setIncompleteItems(res.data.data.items || []);
         setTotalIncomplete(res.data.data.total || 0);

@@ -7,8 +7,7 @@ import RupeeIcon from '../components/RupeeIcon';
 import { formatAllCaps, formatTitleCase, formatDate } from "../utils/formatters";
 import { useToast } from "../context/ToastContext";
 import { AuthContext } from "../context/AuthContext";
-
-const API = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : "http://localhost:5000/api";
+import { API_URL as API } from "../config/api";
 
 const VendorMIS = () => {
   const { addToast } = useToast();

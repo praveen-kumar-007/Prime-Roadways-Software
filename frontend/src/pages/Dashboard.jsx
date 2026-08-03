@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 import { Users, DollarSign, FileText, Globe, ArrowUpRight, TrendingUp, Activity, ArrowDownRight, CreditCard, RefreshCw, Clock, Truck } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { DashboardSkeleton } from '../components/SkeletonLoader';
@@ -33,7 +34,7 @@ const Dashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/dashboard/stats`);
+      const response = await axios.get(`${API_BASE_URL}/api/dashboard/stats`);
       if (response.data.success) {
         setStats(response.data.data || []);
       }
@@ -51,7 +52,7 @@ const Dashboard = () => {
   const handleSync = async () => {
     try {
       setSyncing(true);
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/analytics/sync`);
+      const response = await axios.post(`${API_BASE_URL}/api/analytics/sync`);
       if (response.data.success) {
         setStats(response.data.data);
       }

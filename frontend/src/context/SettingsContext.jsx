@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from './AuthContext';
+import { API_BASE_URL } from '../config/api';
 
 export const SettingsContext = createContext();
 
@@ -62,7 +63,7 @@ export const SettingsProvider = ({ children }) => {
         return;
       }
       
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/settings/config`, {
+      const response = await axios.get(`${API_BASE_URL}/api/settings/config`, {
         withCredentials: true,
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -99,7 +100,7 @@ export const SettingsProvider = ({ children }) => {
 
   const updateGlobalSettings = async (newSettings) => {
     try {
-      const response = await axios.put(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/settings/config`, newSettings, {
+      const response = await axios.put(`${API_BASE_URL}/api/settings/config`, newSettings, {
         withCredentials: true,
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`

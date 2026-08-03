@@ -3,8 +3,7 @@ import axios from "axios";
 import { X } from "lucide-react";
 import { useToast } from "../context/ToastContext";
 import { formatAllCaps, formatTitleCase, formatPhoneNumber } from "../utils/formatters";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { API_BASE_URL as API } from "../config/api";
 
 const QuickAddModal = ({ isOpen, onClose, onSave, type, initialName, editingItem }) => {
   const [formData, setFormData] = useState({});

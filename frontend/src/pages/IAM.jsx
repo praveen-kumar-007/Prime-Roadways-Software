@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import { API_BASE_URL } from '../config/api';
 import { Shield, Plus, Edit2, Trash2 } from 'lucide-react';
 import { TablePageSkeleton } from '../components/SkeletonLoader';
 import Table from '../components/Table';
@@ -33,7 +34,7 @@ const IAM = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/users`, {
+      const res = await axios.get(`${API_BASE_URL}/api/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.success) setUsers(res.data.data || []);
@@ -61,7 +62,7 @@ const IAM = () => {
     try {
       if (formData.id) {
         setUsers(prev => prev.map(u => u.id === formData.id ? { ...u, ...formData } : u));
-        const res = await axios.put(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/users/${formData.id}`, formData, {
+        const res = await axios.put(`${API_BASE_URL}/api/users/${formData.id}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (currentUser.id === formData.id && res.data.success) {
@@ -70,7 +71,7 @@ const IAM = () => {
         addToast("User updated successfully!", "success");
       } else {
         setUsers(prev => [{ ...formData, id: tempId }, ...prev]);
-        const res = await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/users`, formData, {
+        const res = await axios.post(`${API_BASE_URL}/api/users`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.data.success && res.data.data) {
@@ -98,7 +99,7 @@ const IAM = () => {
     
     setUsers(prev => prev.filter(u => u.id !== id));
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/users/${id}`, {
+      await axios.delete(`${API_BASE_URL}/api/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       addToast("User deleted successfully!", "success");

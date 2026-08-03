@@ -2,6 +2,7 @@ import React, { useContext, useState, useRef, useEffect } from 'react';
 import { Bell, Menu, Plus, Minus, AlertCircle, Search, User, Settings, LogOut, Type } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { API_URL } from '../config/api';
 import { SettingsContext } from '../context/SettingsContext';
 import { useNotification } from '../context/NotificationContext';
 import QuickAddModal from './QuickAddModal';
@@ -58,8 +59,7 @@ const Topbar = ({ toggleSidebar, isSidebarOpen, hasSidebar = true }) => {
     if (!editingItem) return;
     
     try {
-      const API = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : "http://localhost:5000/api";
-      const endpoint = `${API}/${editingItem.type === 'city' ? 'cities' : editingItem.type + 's'}/${editingItem.id}`;
+      const endpoint = `${API_URL}/${editingItem.type === 'city' ? 'cities' : editingItem.type + 's'}/${editingItem.id}`;
       
       // Merge with data and set isIncomplete false
       const payload = { ...data, isIncomplete: false };

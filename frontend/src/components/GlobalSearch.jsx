@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Loader2, Package, Users, Truck, FileText, X, Compass } from 'lucide-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 const GlobalSearch = ({ isMobile = false, onResultClick }) => {
   const [query, setQuery] = useState('');
@@ -52,7 +53,7 @@ const GlobalSearch = ({ isMobile = false, onResultClick }) => {
       setIsLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+        const apiUrl = API_BASE_URL;
         const response = await axios.get(`${apiUrl}/api/search?q=${encodeURIComponent(query)}`, {
           headers: { Authorization: `Bearer ${token}` }
         });

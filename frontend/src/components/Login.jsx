@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { API_URL } from '../config/api';
 import './Login.css';
 
 function Login() {
@@ -20,7 +21,7 @@ function Login() {
       navigate('/dashboard');
     }
 
-    fetch('http://localhost:5000/api/health')
+    fetch(`${API_URL}/health`)
       .then(res => res.json())
       .then(data => {
         setApiStatus(`Connected securely`);
@@ -38,7 +39,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
