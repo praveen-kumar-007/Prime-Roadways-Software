@@ -30,6 +30,13 @@ const VendorMIS = () => {
   const [endDate, setEndDate] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [printHeader, setPrintHeader] = useState("PRIME ROADWAYS");
+  const remarksEndRef = useRef(null);
+
+  useEffect(() => {
+    if (activeRemarksModal && activeRemarksModal.remarks) {
+      remarksEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [activeRemarksModal?.remarks]);
 
   const filteredEntries = vendorMisEntries.filter(item => {
     // 1. Date Filter
@@ -844,6 +851,7 @@ const VendorMIS = () => {
                   );
                 })
               )}
+              <div ref={remarksEndRef} />
             </div>
 
             {/* Input Footer or Closed Notice */}

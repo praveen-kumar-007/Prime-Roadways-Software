@@ -26,6 +26,13 @@ const TripMIS = () => {
   const [activeRemarksModal, setActiveRemarksModal] = useState(null);
   const [remarkText, setRemarkText] = useState("");
   const [submittingRemark, setSubmittingRemark] = useState(false);
+  const remarksEndRef = useRef(null);
+
+  useEffect(() => {
+    if (activeRemarksModal && activeRemarksModal.remarks) {
+      remarksEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [activeRemarksModal?.remarks]);
 
   const filteredEntries = tripListEntries.filter(item => {
     // 1. Date Filter
@@ -1081,6 +1088,7 @@ const TripMIS = () => {
                   </button>
                 </form>
               )}
+              <div ref={remarksEndRef} />
             </div>
           </div>
         )}
