@@ -40,6 +40,12 @@ exports.createVendorMis = async (req, res) => {
 
     const isAdmin = user.role === 'Admin' || user.role === 'SuperAdmin';
     payload.approvalStatus = isAdmin ? 'Approved' : 'Pending';
+    if (payload.details && Array.isArray(payload.details)) {
+      payload.details = payload.details.map(d => ({
+        ...d,
+        status: payload.approvalStatus
+      }));
+    }
 
     const result = await getDb().collection('vendor_mis').insertOne(payload);
     
