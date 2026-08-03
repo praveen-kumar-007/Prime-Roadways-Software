@@ -45,6 +45,11 @@ initMongo().catch(err => {
 
 // --- ROUTES ---
 
+// Root
+app.get('/', (req, res) => {
+    res.json({ status: 'ok', message: 'Prime Roadways API Server', version: '1.0.0' });
+});
+
 // Health
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Prime Roadways Logistics API is running' });
