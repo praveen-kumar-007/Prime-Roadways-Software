@@ -1,0 +1,65 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const { initMongo } = require('./src/config/database');
+
+const { login, getMe } = require('./src/controllers/authController');
+const { getAllUsers, createUser, updateUser, deleteUser } = require('./src/controllers/usersController');
+const { getTripMis, createTripMis, updateTripMis, deleteTripMis } = require('./src/controllers/tripMisController');
+const { getVendorMis, createVendorMis, updateVendorMis, deleteVendorMis } = require('./src/controllers/vendorMisController');
+const { authenticateToken, requireAdmin } = require('./src/middleware/auth');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
+app.use(express.json());
+
+// Mock endpoints for MultiMarg UI port
+app.get('/api/settings/config', (req, res) => {
+  res.json({ success: true, data: null });
+});
+app.get('/api/notifications/incomplete', (req, res) => {
+  res.json({ success: true, data: [] });
+});
+
+// Initialize Database
+initMongo().catch(err => {
+  console.error("Failed to connect to DB on startup:", err);
+});
+
+// --- ROUTES ---
+
+// Health
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', message: 'Prime Roadways Logistics API is running' });
+});
+
+// Auth
+app.post('/api/auth/login', login);
+app.get('/api/auth/me', authenticateToken, getMe);
+
+// Users (IAM)
+app.get('/api/users', authenticateToken, requireAdmin, getAllUsers);
+app.post('/api/users', authenticateToken, requireAdmin, createUser);
+app.put('/api/users/:id', authenticateToken, requireAdmin, updateUser);
+app.delete('/api/users/:id', authenticateToken, requireAdmin, deleteUser);
+
+// Trip MIS
+app.get('/api/trip-mis', authenticateToken, getTripMis);
+app.post('/api/trip-mis', authenticateToken, createTripMis);
+app.put('/api/trip-mis/:id', authenticateToken, updateTripMis);
+app.delete('/api/trip-mis/:id', authenticateToken, deleteTripMis);
+
+// Vendor Vehicle MIS
+app.get('/api/vendor-mis', authenticateToken, getVendorMis);
+app.post('/api/vendor-mis', authenticateToken, createVendorMis);
+app.put('/api/vendor-mis/:id', authenticateToken, updateVendorMis);
+app.delete('/api/vendor-mis/:id', authenticateToken, deleteVendorMis);
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});

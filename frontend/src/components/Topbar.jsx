@@ -1,0 +1,328 @@
+import React, { useContext, useState, useRef, useEffect } from 'react';
+import { Bell, Menu, Plus, Minus, AlertCircle, Search, User, Settings, LogOut, Type } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
+import { SettingsContext } from '../context/SettingsContext';
+import { useNotification } from '../context/NotificationContext';
+import QuickAddModal from './QuickAddModal';
+import axios from 'axios';
+import { useToast } from '../context/ToastContext';
+
+const Topbar = ({ toggleSidebar, isSidebarOpen, hasSidebar = true }) => {
+  const { user, hasPermission } = useContext(AuthContext);
+  const { totalIncomplete, incompleteItems, refreshNotifications } = useNotification();
+  const { fontSize, changeFontSize, increaseFontSize, decreaseFontSize, resetFontSize } = useContext(SettingsContext);
+  const [fontInputValue, setFontInputValue] = useState(fontSize ? fontSize.toString() : '100');
+
+  useEffect(() => {
+    setFontInputValue(fontSize ? fontSize.toString() : '100');
+  }, [fontSize]);
+  const userName = user?.name || 'User';
+  const userRole = (user?.role === 'Admin' || !user?.role) ? 'Employee' : user.role;
+
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const profileDropdownRef = useRef(null);
+  const navigate = useNavigate();
+
+  // QuickAddModal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [modalInitialName, setModalInitialName] = useState("");
+  const [editingItem, setEditingItem] = useState(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleNotificationClick = (item) => {
+    setDropdownOpen(false);
+    setModalType(item.type);
+    setModalInitialName(item.name);
+    setEditingItem(item);
+    setModalOpen(true);
+  };
+
+  const handleModalSave = async (data) => {
+    // We update the item via PUT using its ID
+    if (!editingItem) return;
+    
+    try {
+      const API = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : "http://localhost:5000/api";
+      const endpoint = `${API}/${editingItem.type === 'city' ? 'cities' : editingItem.type + 's'}/${editingItem.id}`;
+      
+      // Merge with data and set isIncomplete false
+      const payload = { ...data, isIncomplete: false };
+      
+      await axios.put(endpoint, payload);
+      addToast(`${editingItem.type} details completed successfully!`, "success");
+      refreshNotifications();
+    } catch (e) {
+      console.error(e);
+      addToast(`Failed to update ${editingItem.type}`, "error");
+    }
+  };
+
+  return (
+    <div className="topbar no-print" style={{ height: 'var(--topbar-height)', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem', background: 'var(--secondary-color)', color: '#ffffff', position: 'fixed', top: 0, left: 0, zIndex: 200 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+        {hasSidebar && (
+          <button onClick={toggleSidebar} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center' }}>
+            <Menu size={24} />
+          </button>
+        )}
+        <img src="/IMG-20260803-WA0000.jpg" alt="Logo" style={{ height: '40px', width: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }} className="topbar-right">
+        {/* Quick Action Buttons Removed */}
+        {/* Font Size Adjuster Controls */}
+        <div 
+          title="Adjust Application Text Size"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            background: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '6px',
+            padding: '0.2rem 0.4rem',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            gap: '0.2rem'
+          }}
+        >
+          <button
+            type="button"
+            onClick={decreaseFontSize}
+            title="Decrease Text Size (-)"
+            disabled={fontSize <= 50}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: fontSize <= 50 ? 'rgba(255, 255, 255, 0.3)' : '#ffffff',
+              cursor: fontSize <= 50 ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0.25rem',
+              borderRadius: '4px',
+              transition: 'background 0.2s'
+            }}
+            onMouseOver={e => { if (fontSize > 50) e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; }}
+            onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+          >
+            <Minus size={14} />
+          </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', padding: '0 2px' }}>
+            <Type 
+              size={12} 
+              style={{ opacity: 0.85, cursor: 'pointer', color: '#ffffff' }} 
+              onClick={resetFontSize}
+              title="Click to reset text size to 100%"
+            />
+            <input
+              type="text"
+              value={fontInputValue}
+              onChange={(e) => setFontInputValue(e.target.value)}
+              onBlur={() => {
+                const val = parseInt(fontInputValue, 10);
+                if (!isNaN(val)) {
+                  changeFontSize(val);
+                } else {
+                  setFontInputValue(fontSize.toString());
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const val = parseInt(fontInputValue, 10);
+                  if (!isNaN(val)) {
+                    changeFontSize(val);
+                  } else {
+                    setFontInputValue(fontSize.toString());
+                  }
+                  e.target.blur();
+                }
+              }}
+              title="Type custom text size percentage (50 - 400) & press Enter"
+              style={{
+                width: '38px',
+                background: 'transparent',
+                border: 'none',
+                color: '#ffffff',
+                fontSize: '0.78rem',
+                fontWeight: '600',
+                textAlign: 'center',
+                outline: 'none',
+                padding: '0'
+              }}
+            />
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#ffffff', opacity: 0.9 }}>%</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={increaseFontSize}
+            title="Increase Text Size (+)"
+            disabled={fontSize >= 400}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: fontSize >= 400 ? 'rgba(255, 255, 255, 0.3)' : '#ffffff',
+              cursor: fontSize >= 400 ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0.25rem',
+              borderRadius: '4px',
+              transition: 'background 0.2s'
+            }}
+            onMouseOver={e => { if (fontSize < 400) e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; }}
+            onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+          >
+            <Plus size={14} />
+          </button>
+        </div>
+
+        {/* Notifications */}
+        {hasSidebar && (
+          <div style={{ position: 'relative' }} ref={dropdownRef}>
+            <button 
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#fff', position: 'relative', display: 'flex', alignItems: 'center' }}
+            >
+              <Bell size={20} />
+              {totalIncomplete > 0 && (
+                <span style={{
+                  position: 'absolute', top: '-5px', right: '-8px',
+                  background: '#ef4444', color: 'white', borderRadius: '50%',
+                  padding: '0.1rem 0.4rem', fontSize: '0.7rem', fontWeight: 'bold'
+                }}>
+                  {totalIncomplete}
+                </span>
+              )}
+            </button>
+            
+            {dropdownOpen && (
+              <div style={{
+                position: 'absolute', top: '100%', right: 0, marginTop: '10px',
+                width: '300px', background: 'white', borderRadius: '8px',
+                boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)',
+                border: '1px solid #e2e8f0', color: '#1e293b', zIndex: 1000
+              }}>
+                <div style={{ padding: '1rem', borderBottom: '1px solid #e2e8f0', fontWeight: '600' }}>
+                  Notifications ({totalIncomplete})
+                </div>
+                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                  {incompleteItems.length === 0 ? (
+                    <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b', fontSize: '0.9rem' }}>
+                      No pending notifications!
+                    </div>
+                  ) : (
+                    incompleteItems.map(item => (
+                      <div 
+                        key={item.id} 
+                        onClick={() => handleNotificationClick(item)}
+                        style={{ 
+                          padding: '1rem', borderBottom: '1px solid #f1f5f9', cursor: 'pointer',
+                          display: 'flex', gap: '0.75rem', alignItems: 'flex-start',
+                          transition: 'background 0.2s'
+                        }}
+                        onMouseOver={e => e.currentTarget.style.background = '#f8fafc'}
+                        onMouseOut={e => e.currentTarget.style.background = 'white'}
+                      >
+                        <AlertCircle size={18} color="#ef4444" style={{ flexShrink: 0, marginTop: '2px' }} />
+                        <div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: '500' }}>Incomplete {item.type.charAt(0).toUpperCase() + item.type.slice(1)}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>"{item.name}" requires more details. Click to complete.</div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* User Profile */}
+        <div style={{ position: 'relative' }} ref={profileDropdownRef}>
+          <div 
+            onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', padding: '0.25rem', borderRadius: '8px', transition: 'background 0.2s' }}
+            onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+            onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+          >
+            <div style={{ textAlign: 'right', display: window.innerWidth > 768 ? 'block' : 'none' }}>
+              <h6 style={{ fontSize: '0.85rem', marginBottom: '0', fontWeight: 600, color: '#ffffff' }}>{userName}</h6>
+              <p style={{ margin: '0', fontSize: '0.75rem', color: '#9ba7b6' }}>{userRole}</p>
+            </div>
+            <img 
+              src={user?.photo && (user.photo.startsWith('http') || user.photo.startsWith('blob')) ? user.photo : (user?.photo ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}${user.photo}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=FF9900&color=fff`)} 
+              alt="User" 
+              className="avatar" 
+              style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.2)' }} 
+            />
+          </div>
+          
+          {profileDropdownOpen && (
+            <div style={{
+              position: 'absolute', top: '100%', right: 0, marginTop: '10px',
+              width: '220px', background: 'var(--panel-solid-bg)', borderRadius: '12px',
+              boxShadow: 'var(--shadow-lg)',
+              border: '1px solid var(--border-color)', color: 'var(--text-dark)', zIndex: 1000,
+              overflow: 'hidden'
+            }}>
+              <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <img 
+                  src={user?.photo && (user.photo.startsWith('http') || user.photo.startsWith('blob')) ? user.photo : (user?.photo ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}${user.photo}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=FF9900&color=fff`)} 
+                  alt="User" 
+                  style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} 
+                />
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{userName}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{user?.email || 'admin@primeroadways.com'}</div>
+                </div>
+              </div>
+              
+              <div style={{ padding: '0.5rem' }}>
+                
+                <div 
+                  onClick={() => {
+                    setProfileDropdownOpen(false);
+                    // assuming logout is in AuthContext or just reload
+                    localStorage.removeItem('token');
+                    window.location.href = '/';
+                  }}
+                  style={{ padding: '0.6rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', borderRadius: '6px', fontSize: '0.9rem', color: '#ef4444', transition: 'all 0.2s' }}
+                  onMouseOver={e => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.color = '#dc2626'; }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ef4444'; }}
+                >
+                  <LogOut size={16} /> Logout
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <QuickAddModal 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)}
+        onSave={handleModalSave}
+        type={modalType}
+        initialName={modalInitialName}
+      />
+    </div>
+  );
+};
+
+export default Topbar;
