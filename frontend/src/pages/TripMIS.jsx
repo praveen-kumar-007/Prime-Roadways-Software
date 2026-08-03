@@ -4,7 +4,7 @@ import Papa from "papaparse";
 import Table from "../components/Table";
 import { Plus, Truck, Check, X, Clock, Trash2, Edit, Printer, Download, Filter, Search, Upload, FileText } from "lucide-react";
 import RupeeIcon from '../components/RupeeIcon';
-import { formatAllCaps, formatTitleCase, formatDate } from "../utils/formatters";
+import { formatAllCaps, formatTitleCase, formatDate, formatDateForInput, parseDate } from "../utils/formatters";
 import { useToast } from "../context/ToastContext";
 import { AuthContext } from "../context/AuthContext";
 import { API_URL as API } from "../config/api";
@@ -27,7 +27,7 @@ const TripMIS = () => {
   const filteredEntries = tripListEntries.filter(item => {
     // 1. Date Filter
     if (startDate || endDate) {
-      const itemDate = new Date(item.date || item.createdAt);
+      const itemDate = parseDate(item.date || item.createdAt);
       itemDate.setHours(0,0,0,0);
       const start = startDate ? new Date(startDate) : new Date("1970-01-01");
       start.setHours(0,0,0,0);
@@ -64,11 +64,11 @@ const TripMIS = () => {
   }, 0);
 
   const handleExportCSV = () => {
-    let csv = "Trip Date,Trip No,Vehicle No,Vehicle Type,Mode,Payment,Client Name,Origin,Destination,LR No,Consignor,Consignee,LR Origin,LR Destination,Box,Weight,Freight,Pickup,Delivery,Special,Other,Paid Amount,Approval Status\n";
+    let csv = "Trip No,Vehicle No,Vehicle Type,Mode,Payment,Client Name,Origin,Destination,LR No,Consignor,Consignee,LR Origin,LR Destination,Box,Weight,Freight,Pickup,Delivery,Special,Other,Paid Amount,Approval Status,Created Date\n";
     filteredEntries.forEach(trip => {
       if (trip.parcels && trip.parcels.length > 0) {
         trip.parcels.forEach((p, pIdx) => {
-          const tripDate = pIdx === 0 ? (trip.date || (trip.createdAt ? trip.createdAt.substring(0,10) : '')) : '';
+          const tripDate = pIdx === 0 ? (trip.date ? formatDate(trip.date) : (trip.createdAt ? formatDate(trip.createdAt) : '')) : '';
           const tripNo = pIdx === 0 ? (trip.tripNo || '') : '';
           const vehicleNo = pIdx === 0 ? (trip.vehicleNo || '') : '';
           const vehicleType = pIdx === 0 ? (trip.vehicleType || '') : '';
@@ -80,10 +80,11 @@ const TripMIS = () => {
           const paidAmount = pIdx === 0 ? (trip.paidAmount || '') : '';
           const approvalStatus = pIdx === 0 ? (trip.approvalStatus || '') : '';
           
-          csv += `"${tripDate}","${tripNo}","${vehicleNo}","${vehicleType}","${mode}","${payment}","${clientName}","${origin}","${destination}","${p.lrNo || ''}","${p.consignor || ''}","${p.consignee || ''}","${p.origin || ''}","${p.destination || ''}","${p.box || ''}","${p.weight || ''}","${p.freight || ''}","${p.pickup || ''}","${p.delivery || ''}","${p.special || ''}","${p.other || ''}","${paidAmount}","${approvalStatus}"\n`;
+          csv += `"${tripNo}","${vehicleNo}","${vehicleType}","${mode}","${payment}","${clientName}","${origin}","${destination}","${p.lrNo || ''}","${p.consignor || ''}","${p.consignee || ''}","${p.origin || ''}","${p.destination || ''}","${p.box || ''}","${p.weight || ''}","${p.freight || ''}","${p.pickup || ''}","${p.delivery || ''}","${p.special || ''}","${p.other || ''}","${paidAmount}","${approvalStatus}","${tripDate}"\n`;
         });
       } else {
-        csv += `"${trip.date || (trip.createdAt ? trip.createdAt.substring(0,10) : '')}","${trip.tripNo || ''}","${trip.vehicleNo || ''}","${trip.vehicleType || ''}","${trip.mode || ''}","${trip.payment || ''}","${trip.clientName || ''}","${trip.origin || ''}","${trip.destination || ''}","","","","","","","","","","","","","${trip.paidAmount || ''}","${trip.approvalStatus || ''}"\n`;
+        const tripDate = trip.date ? formatDate(trip.date) : (trip.createdAt ? formatDate(trip.createdAt) : '');
+        csv += `"${trip.tripNo || ''}","${trip.vehicleNo || ''}","${trip.vehicleType || ''}","${trip.mode || ''}","${trip.payment || ''}","${trip.clientName || ''}","${trip.origin || ''}","${trip.destination || ''}","","","","","","","","","","","","","${trip.paidAmount || ''}","${trip.approvalStatus || ''}","${tripDate}"\n`;
       }
     });
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -133,7 +134,7 @@ const TripMIS = () => {
           if (!tripsMap[tripNo]) {
             tripsMap[tripNo] = {
               tripNo: row['Trip No'] || '',
-              date: row['Trip Date'] || new Date().toISOString().split('T')[0],
+              date: formatDate(row['Trip Date'] || new Date()),
               vehicleNo: row['Vehicle No'] || '',
               vehicleType: row['Vehicle Type'] || '',
               mode: row['Mode'] || 'Normal',
@@ -293,7 +294,7 @@ const TripMIS = () => {
                 origin: tripListForm.origin,
                 destination: tripListForm.destination,
                 clientName: tripListForm.clientName,
-                date: tripListForm.date,
+                date: formatDate(tripListForm.date),
                 vehicleType: tripListForm.vehicleType,
                 vehicleNo: tripListForm.vehicleNo,
                 mode: tripListForm.mode,
@@ -351,7 +352,7 @@ const TripMIS = () => {
               </div>
               <div className="form-group">
                 <label className="form-label" style={{ fontWeight: "500", color: "#374151" }}>Date<span style={{ color: "#ef4444", marginLeft: "2px" }}>*</span></label>
-                <input type="date" className="form-control" value={tripListForm.date} onChange={e => setTripListForm({...tripListForm, date: e.target.value})} required />
+                <input type="date" className="form-control" value={formatDateForInput(tripListForm.date)} onChange={e => setTripListForm({...tripListForm, date: e.target.value})} required />
               </div>
               <div className="form-group">
                 <label className="form-label" style={{ fontWeight: "500", color: "#374151" }}>Vehicle Type<span style={{ color: "#ef4444", marginLeft: "2px" }}>*</span></label>
@@ -485,9 +486,9 @@ const TripMIS = () => {
         <Table 
           loading={false}
           headers={[
-            "Trip No", "Client Name", "Date", "Vehicle Details", "Mode", "Parcels (LRs)", "Total Box", "Total Weight", 
+            "Trip No", "Client Name", "Vehicle Details", "Mode", "Parcels (LRs)", "Total Box", "Total Weight", 
             <div style={{ textAlign: "center", lineHeight: "1.2" }}>Total Freight<br/><span style={{ fontSize: "0.65rem", color: "#6b7280" }}>Payment Mode</span></div>,
-            "Status", "Actions"
+            "Status", "Created Date", "Actions"
           ]}
           data={filteredEntries}
           emptyMessage="No trip MIS entries added yet. Click 'Add Trip MIS Entry' to start."
@@ -502,7 +503,6 @@ const TripMIS = () => {
                   </div>
                 )}
               </td>
-              <td style={{ whiteSpace: "nowrap" }}>{item.date ? formatDate(item.date) : "-"}</td>
               <td style={{ whiteSpace: "nowrap" }}>
                 <div style={{ fontSize: "0.85rem", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>
                   <Truck size={14} color="var(--text-muted)" /> {item.vehicleNo}
@@ -575,6 +575,7 @@ const TripMIS = () => {
                   {item.approvalStatus || 'Approved'}
                 </span>
               </td>
+              <td style={{ whiteSpace: "nowrap" }}>{item.date ? formatDate(item.date) : (item.createdAt ? formatDate(item.createdAt) : "-")}</td>
               <td style={{ textAlign: "right" }}>
                 <div className="action-buttons-wrapper">
                   {isAdminOrSuperAdmin && (

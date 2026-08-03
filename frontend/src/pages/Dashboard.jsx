@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
-import { Users, DollarSign, FileText, Globe, ArrowUpRight, TrendingUp, Activity, ArrowDownRight, CreditCard, RefreshCw, Clock, Truck } from 'lucide-react';
+import { Users, DollarSign, FileText, Globe, ArrowUpRight, TrendingUp, Activity, ArrowDownRight, CreditCard, RefreshCw, Clock, Truck, Package, ChevronRight } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { DashboardSkeleton } from '../components/SkeletonLoader';
 import { formatDate } from '../utils/formatters';
 import RupeeIcon from '../components/RupeeIcon';
+import { AuthContext } from '../context/AuthContext';
 
 const StatCard = ({ title, value, icon, subtitle, trend }) => (
   <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -27,16 +29,223 @@ const StatCard = ({ title, value, icon, subtitle, trend }) => (
   </div>
 );
 
+const VendorDashboardView = ({ user, hasPermission }) => {
+  const navigate = useNavigate();
+
+  const showTripMis = hasPermission('tripmis');
+  const showVendorMis = hasPermission('vendormis');
+
+  return (
+    <div style={{ backgroundColor: "#f8fafc", minHeight: "100%", padding: "20px" }}>
+      {/* Welcome Banner */}
+      <div style={{
+        background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+        color: "white",
+        borderRadius: "16px",
+        padding: "3rem 2rem",
+        marginBottom: "2rem",
+        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+        position: "relative",
+        overflow: "hidden"
+      }}>
+        <div style={{
+          position: "absolute",
+          right: "-50px",
+          top: "-50px",
+          width: "300px",
+          height: "300px",
+          background: "radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(0,0,0,0) 70%)",
+          borderRadius: "50%",
+          pointerEvents: "none"
+        }} />
+        
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <div style={{ display: "inline-block", background: "rgba(255, 255, 255, 0.1)", padding: "0.4rem 1rem", borderRadius: "20px", fontSize: "0.8rem", fontWeight: "600", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "1rem", border: "1px solid rgba(255, 255, 255, 0.15)" }}>
+            Vendor Portal
+          </div>
+          <h1 style={{ fontSize: "2.5rem", fontWeight: "800", margin: "0 0 0.5rem 0", letterSpacing: "-0.5px" }}>
+            Welcome to Prime Roadways
+          </h1>
+          <p style={{ fontSize: "1.1rem", color: "#cbd5e1", margin: 0, maxWidth: "600px", lineHeight: "1.6" }}>
+            Hello, <strong style={{ color: "#ffffff" }}>{user?.name || user?.email || "Vendor"}</strong>. Select an available module below to manage your records and manifests.
+          </p>
+        </div>
+      </div>
+
+      {/* Available Modules Section */}
+      <div style={{ marginBottom: "1rem" }}>
+        <h3 style={{ fontSize: "1.25rem", color: "#0f172a", margin: "0 0 1.25rem 0", fontWeight: "700" }}>
+          Assigned Modules
+        </h3>
+
+        {(!showTripMis && !showVendorMis) ? (
+          <div style={{
+            background: "white",
+            padding: "3rem",
+            borderRadius: "12px",
+            textAlign: "center",
+            border: "1px solid #e2e8f0",
+            color: "#64748b"
+          }}>
+            <p style={{ fontSize: "1.1rem", margin: "0 0 0.5rem 0", fontWeight: "600" }}>No module permissions assigned yet.</p>
+            <p style={{ fontSize: "0.9rem", margin: 0 }}>Please contact an administrator to request permissions for Trip MIS or Vendor MIS.</p>
+          </div>
+        ) : (
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            gap: "1.5rem"
+          }}>
+            {showTripMis && (
+              <div 
+                onClick={() => navigate("/dashboard/trip-mis")}
+                style={{
+                  background: "white",
+                  borderRadius: "16px",
+                  padding: "2rem",
+                  border: "1px solid #e2e8f0",
+                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  transition: "all 0.25s ease",
+                  position: "relative",
+                  overflow: "hidden"
+                }}
+                onMouseOver={e => {
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                  e.currentTarget.style.boxShadow = "0 20px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04)";
+                  e.currentTarget.style.borderColor = "#818cf8";
+                }}
+                onMouseOut={e => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.05)";
+                  e.currentTarget.style.borderColor = "#e2e8f0";
+                }}
+              >
+                <div>
+                  <div style={{
+                    width: "56px",
+                    height: "56px",
+                    borderRadius: "14px",
+                    background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    marginBottom: "1.5rem"
+                  }}>
+                    <Truck size={28} />
+                  </div>
+                  <h4 style={{ fontSize: "1.4rem", fontWeight: "700", color: "#0f172a", margin: "0 0 0.75rem 0" }}>
+                    Trip MIS
+                  </h4>
+                  <p style={{ color: "#64748b", fontSize: "0.95rem", lineHeight: "1.6", margin: "0 0 2rem 0" }}>
+                    View, create, and print trip consignment notes, parcel details, and freight billing records.
+                  </p>
+                </div>
+
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  color: "#4f46e5",
+                  fontWeight: "600",
+                  fontSize: "0.95rem"
+                }}>
+                  Open Trip MIS <ChevronRight size={18} />
+                </div>
+              </div>
+            )}
+
+            {showVendorMis && (
+              <div 
+                onClick={() => navigate("/dashboard/vendor-mis")}
+                style={{
+                  background: "white",
+                  borderRadius: "16px",
+                  padding: "2rem",
+                  border: "1px solid #e2e8f0",
+                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  transition: "all 0.25s ease",
+                  position: "relative",
+                  overflow: "hidden"
+                }}
+                onMouseOver={e => {
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                  e.currentTarget.style.boxShadow = "0 20px 25px -5px rgba(16, 185, 129, 0.1), 0 10px 10px -5px rgba(16, 185, 129, 0.04)";
+                  e.currentTarget.style.borderColor = "#34d399";
+                }}
+                onMouseOut={e => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.05)";
+                  e.currentTarget.style.borderColor = "#e2e8f0";
+                }}
+              >
+                <div>
+                  <div style={{
+                    width: "56px",
+                    height: "56px",
+                    borderRadius: "14px",
+                    background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    marginBottom: "1.5rem"
+                  }}>
+                    <Package size={28} />
+                  </div>
+                  <h4 style={{ fontSize: "1.4rem", fontWeight: "700", color: "#0f172a", margin: "0 0 0.75rem 0" }}>
+                    Vendor Vehicle MIS
+                  </h4>
+                  <p style={{ color: "#64748b", fontSize: "0.95rem", lineHeight: "1.6", margin: "0 0 2rem 0" }}>
+                    Submit vehicle hire bills, manage transport charges, and check payment approval status.
+                  </p>
+                </div>
+
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  color: "#059669",
+                  fontWeight: "600",
+                  fontSize: "0.95rem"
+                }}>
+                  Open Vendor Vehicle MIS <ChevronRight size={18} />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const Dashboard = () => {
+  const { user, hasPermission } = useContext(AuthContext);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
 
+  if (user?.role === 'Vendor') {
+    return <VendorDashboardView user={user} hasPermission={hasPermission} />;
+  }
+
   const fetchStats = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/dashboard/stats`);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_BASE_URL}/api/dashboard/stats`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (response.data.success) {
-        setStats(response.data.data || []);
+        setStats(response.data.data || null);
       }
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
@@ -52,13 +261,9 @@ const Dashboard = () => {
   const handleSync = async () => {
     try {
       setSyncing(true);
-      const response = await axios.post(`${API_BASE_URL}/api/analytics/sync`);
-      if (response.data.success) {
-        setStats(response.data.data);
-      }
+      await fetchStats();
     } catch (error) {
       console.error('Error syncing stats:', error);
-      alert('Failed to sync analytics. Please try again.');
     } finally {
       setSyncing(false);
     }

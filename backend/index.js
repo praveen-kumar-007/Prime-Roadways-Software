@@ -8,6 +8,7 @@ const { login, getMe } = require('./src/controllers/authController');
 const { getAllUsers, createUser, updateUser, deleteUser } = require('./src/controllers/usersController');
 const { getTripMis, createTripMis, updateTripMis, deleteTripMis } = require('./src/controllers/tripMisController');
 const { getVendorMis, createVendorMis, updateVendorMis, deleteVendorMis } = require('./src/controllers/vendorMisController');
+const { getDashboardStats } = require('./src/controllers/dashboardController');
 const { authenticateToken, requireAdmin } = require('./src/middleware/auth');
 
 const app = express();
@@ -73,6 +74,9 @@ app.get('/api/users', authenticateToken, requireAdmin, getAllUsers);
 app.post('/api/users', authenticateToken, requireAdmin, createUser);
 app.put('/api/users/:id', authenticateToken, requireAdmin, updateUser);
 app.delete('/api/users/:id', authenticateToken, requireAdmin, deleteUser);
+
+// Dashboard
+app.get('/api/dashboard/stats', authenticateToken, getDashboardStats);
 
 // Trip MIS
 app.get('/api/trip-mis', authenticateToken, getTripMis);

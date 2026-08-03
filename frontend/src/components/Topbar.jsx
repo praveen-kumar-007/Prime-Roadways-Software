@@ -81,7 +81,9 @@ const Topbar = ({ toggleSidebar, isSidebarOpen, hasSidebar = true }) => {
             <Menu size={24} />
           </button>
         )}
-        <img src="/IMG-20260803-WA0000.jpg" alt="Logo" style={{ height: '40px', width: '40px', borderRadius: '4px', objectFit: 'cover' }} />
+        <NavLink to="/dashboard" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }} title="Go to Overview Dashboard">
+          <img src="/IMG-20260803-WA0000.jpg" alt="Logo" style={{ height: '40px', width: '40px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} />
+        </NavLink>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }} className="topbar-right">

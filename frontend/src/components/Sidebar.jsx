@@ -32,6 +32,12 @@ import {
 
 export const menuItems = [
   {
+    name: "Dashboard",
+    path: "/dashboard",
+    icon: <LayoutDashboard size={20} />,
+    permission: ""
+  },
+  {
     name: "Trip MIS",
     path: "/dashboard/trip-mis",
     icon: <Truck size={20} />,
@@ -388,6 +394,7 @@ const Sidebar = ({ isOpen, setIsSidebarOpen }) => {
             <NavLink
               key={index}
               to={item.path}
+              end={item.path === "/dashboard"}
               title={!isExpanded ? item.name : ""}
               onClick={handleLinkClick}
               style={({ isActive }) => ({

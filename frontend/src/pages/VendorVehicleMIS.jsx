@@ -4,7 +4,7 @@ import Papa from "papaparse";
 import Table from "../components/Table";
 import { Plus, Truck, Check, X, Clock, Trash2, Edit, Printer, Download, Filter, Search, Upload, FileText } from "lucide-react";
 import RupeeIcon from '../components/RupeeIcon';
-import { formatAllCaps, formatTitleCase, formatDate } from "../utils/formatters";
+import { formatAllCaps, formatTitleCase, formatDate, formatDateForInput, parseDate } from "../utils/formatters";
 import { useToast } from "../context/ToastContext";
 import { AuthContext } from "../context/AuthContext";
 import { API_URL as API } from "../config/api";
@@ -27,7 +27,7 @@ const VendorMIS = () => {
   const filteredEntries = vendorMisEntries.filter(item => {
     // 1. Date Filter
     if (startDate || endDate) {
-      const itemDate = new Date(item.createdAt);
+      const itemDate = parseDate(item.createdAt);
       itemDate.setHours(0,0,0,0);
       const start = startDate ? new Date(startDate) : new Date("1970-01-01");
       start.setHours(0,0,0,0);
@@ -55,19 +55,19 @@ const VendorMIS = () => {
   const totalReceivable = filteredEntries.reduce((sum, item) => sum + (parseFloat(item.totalAmount) || 0), 0);
 
   const handleExportCSV = () => {
-    let csv = "Created At,Vendor Name,Handover To,Date,From,To,Vehicle No,Particular,Mode,Amount,Others,Status,Total Amount,Approval Status\n";
+    let csv = "Vendor Name,Handover To,Date,From,To,Vehicle No,Particular,Mode,Amount,Others,Status,Total Amount,Approval Status,Created Date\n";
     filteredEntries.forEach(item => {
       if (item.details && item.details.length > 0) {
         item.details.forEach((d, dIdx) => {
-          const createdAt = dIdx === 0 ? (item.createdAt ? item.createdAt.substring(0,10) : '') : '';
+          const createdAt = dIdx === 0 ? (item.createdAt ? formatDate(item.createdAt) : '') : '';
           const vendorName = dIdx === 0 ? (item.vendorName || '') : '';
           const totalAmt = dIdx === 0 ? (item.totalAmount || '') : '';
           const approvalStatus = dIdx === 0 ? (item.approvalStatus || '') : '';
           
-          csv += `"${createdAt}","${vendorName}","${d.handoverTo || ''}","${d.date || ''}","${d.from || ''}","${d.to || ''}","${d.vehicleNo || ''}","${d.particular || ''}","${d.mode || ''}","${d.amount || ''}","${d.others || ''}","${d.status || ''}","${totalAmt}","${approvalStatus}"\n`;
+          csv += `"${vendorName}","${d.handoverTo || ''}","${d.date ? formatDate(d.date) : ''}","${d.from || ''}","${d.to || ''}","${d.vehicleNo || ''}","${d.particular || ''}","${d.mode || ''}","${d.amount || ''}","${d.others || ''}","${d.status || ''}","${totalAmt}","${approvalStatus}","${createdAt}"\n`;
         });
       } else {
-        csv += `"${item.createdAt ? item.createdAt.substring(0,10) : ''}","${item.vendorName || ''}","","","","","","","","","","","${item.totalAmount || ''}","${item.approvalStatus || ''}"\n`;
+        csv += `"${item.vendorName || ''}","","","","","","","","","","","${item.totalAmount || ''}","${item.approvalStatus || ''}","${item.createdAt ? formatDate(item.createdAt) : ''}"\n`;
       }
     });
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -118,7 +118,7 @@ const VendorMIS = () => {
           if (!vendorsMap[vendorName]) {
             vendorsMap[vendorName] = {
               vendorName: vendorName,
-              createdAt: row['Created At'] || new Date().toISOString(),
+              createdAt: formatDate(row['Created At'] || new Date()),
               details: []
             };
           }
@@ -126,7 +126,7 @@ const VendorMIS = () => {
           if (row['Date'] || row['Vehicle No']) {
             vendorsMap[vendorName].details.push({
               handoverTo: row['Handover To'] || '',
-              date: row['Date'] || new Date().toISOString().split('T')[0],
+              date: formatDate(row['Date'] || new Date()),
               from: row['From'] || '',
               to: row['To'] || '',
               vehicleNo: row['Vehicle No'] || '',
@@ -259,9 +259,12 @@ const VendorMIS = () => {
               
               const newEntry = {
                 vendorName: vendorMisForm.vendorName,
-                details: vendorMisForm.details,
+                details: vendorMisForm.details.map(d => ({
+                  ...d,
+                  date: formatDate(d.date)
+                })),
                 totalAmount: totalAmount,
-                createdAt: new Date().toISOString()
+                createdAt: formatDate(new Date())
               };
               
               try {
@@ -320,7 +323,7 @@ const VendorMIS = () => {
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
                     <div>
                       <label style={{ fontSize: "0.75rem", color: "#6b7280", fontWeight: "600", textTransform: "uppercase", marginBottom: "4px", display: "block" }}>Date</label>
-                      <input type="date" className="form-control" style={{ fontSize: "0.85rem", padding: "8px" }} value={detail.date} onChange={e => { const newDetails = [...vendorMisForm.details]; newDetails[idx].date = e.target.value; setVendorMisForm({...vendorMisForm, details: newDetails}); }} required />
+                      <input type="date" className="form-control" style={{ fontSize: "0.85rem", padding: "8px" }} value={formatDateForInput(detail.date)} onChange={e => { const newDetails = [...vendorMisForm.details]; newDetails[idx].date = e.target.value; setVendorMisForm({...vendorMisForm, details: newDetails}); }} required />
                     </div>
                     <div>
                       <label style={{ fontSize: "0.75rem", color: "#6b7280", fontWeight: "600", textTransform: "uppercase", marginBottom: "4px", display: "block" }}>From</label>
@@ -380,7 +383,7 @@ const VendorMIS = () => {
       <div className="table-responsive">
         <Table 
           loading={false}
-          headers={["Vendor Name", "Date Created", "Details", "Total Amount", "Status", "Actions"]}
+          headers={["Vendor Name", "Details", "Total Amount", "Status", "Created Date", "Actions"]}
           data={filteredEntries}
           emptyMessage="No Vendor MIS entries added yet. Click 'Add Vendor MIS Entry' to start."
           renderRow={(item, idx) => (
@@ -393,7 +396,6 @@ const VendorMIS = () => {
                   </div>
                 )}
               </td>
-              <td style={{ whiteSpace: "nowrap" }}>{item.createdAt ? formatDate(item.createdAt) : "-"}</td>
               <td style={{ padding: 0 }}>
                 <div style={{ maxHeight: "300px", overflowY: "auto", margin: "10px", border: "1px solid #e2e8f0", borderRadius: "8px", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
                   <table style={{ width: "100%", fontSize: "0.75rem", borderCollapse: "collapse", textAlign: "left" }}>
@@ -473,6 +475,7 @@ const VendorMIS = () => {
                   {item.approvalStatus || 'Approved'}
                 </span>
               </td>
+              <td style={{ whiteSpace: "nowrap" }}>{item.createdAt ? formatDate(item.createdAt) : "-"}</td>
               <td style={{ textAlign: "right" }}>
                 <div className="action-buttons-wrapper">
                   {isAdminOrSuperAdmin && (

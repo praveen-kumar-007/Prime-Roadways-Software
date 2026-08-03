@@ -39,7 +39,7 @@ function App() {
                       </ProtectedRoute>
                     }
                   >
-                    <Route index element={<Navigate to="trip-mis" replace />} />
+                    <Route index element={<Dashboard />} />
                     <Route path="trip-mis" element={<TripMIS />} />
                     <Route path="vendor-mis" element={<VendorVehicleMIS />} />
                     <Route path="iam" element={<IAM />} />

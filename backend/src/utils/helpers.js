@@ -36,28 +36,47 @@ function generateTripNumber() {
 }
 
 /**
- * Format a date to YYYY-MM-DD
+ * Format a date to YYYY-MM-DD (ISO standard for internal queries)
  * @param {Date|string} date
  */
 function formatDate(date) {
   if (!date) return "";
+  if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}/.test(date)) {
+    return date.split("T")[0];
+  }
   const d = new Date(date);
-  if (isNaN(d.getTime())) return "";
+  if (isNaN(d.getTime())) return typeof date === "string" ? date : "";
   return d.toISOString().slice(0, 10);
 }
 
 /**
- * Format a date to DD/MM/YYYY
+ * Format a date to DD-MM-YYYY globally across the project
  * @param {Date|string} date
  */
 function formatDateDisplay(date) {
   if (!date) return "";
+  if (typeof date === "string") {
+    const ddMMyyyyMatch = date.trim().match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
+    if (ddMMyyyyMatch) {
+      const day = ddMMyyyyMatch[1].padStart(2, "0");
+      const month = ddMMyyyyMatch[2].padStart(2, "0");
+      const year = ddMMyyyyMatch[3];
+      return `${day}-${month}-${year}`;
+    }
+    const yyyyMMddMatch = date.trim().match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+    if (yyyyMMddMatch) {
+      const year = yyyyMMddMatch[1];
+      const month = yyyyMMddMatch[2].padStart(2, "0");
+      const day = yyyyMMddMatch[3].padStart(2, "0");
+      return `${day}-${month}-${year}`;
+    }
+  }
   const d = new Date(date);
-  if (isNaN(d.getTime())) return "";
+  if (isNaN(d.getTime())) return typeof date === "string" ? date : "";
   const day = String(d.getDate()).padStart(2, "0");
   const month = String(d.getMonth() + 1).padStart(2, "0");
   const year = d.getFullYear();
-  return `${day}/${month}/${year}`;
+  return `${day}-${month}-${year}`;
 }
 
 /**
