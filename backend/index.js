@@ -60,6 +60,21 @@ app.post('/api/vendor-mis', authenticateToken, createVendorMis);
 app.put('/api/vendor-mis/:id', authenticateToken, updateVendorMis);
 app.delete('/api/vendor-mis/:id', authenticateToken, deleteVendorMis);
 
+// Keep-alive self-ping to bypass free-tier inactivity sleep
+const RENDER_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}/api/health`;
+setInterval(() => {
+  const httpModule = RENDER_URL.startsWith('https') ? require('https') : require('http');
+  httpModule.get(RENDER_URL, (res) => {
+    if (res.statusCode === 200) {
+      console.log(`[Keep-Alive] Self-ping successful: ${res.statusCode}`);
+    } else {
+      console.warn(`[Keep-Alive] Self-ping status code: ${res.statusCode}`);
+    }
+  }).on('error', (err) => {
+    console.error(`[Keep-Alive] Self-ping error: ${err.message}`);
+  });
+}, 14 * 60 * 1000); // Every 14 minutes
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
