@@ -28,13 +28,6 @@ async function seedSuperAdmin() {
     const adminEmail = 'praveen.pr105@gmail.com';
     const adminPassword = '123456'; // Change this after logging in!
 
-    // Check if superadmin already exists
-    const existing = await usersCollection.findOne({ email: adminEmail });
-    if (existing) {
-      console.log(`⚠️ User ${adminEmail} already exists! Skipping seed.`);
-      process.exit(0);
-    }
-
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(adminPassword, salt);
 
@@ -48,7 +41,11 @@ async function seedSuperAdmin() {
       isBlocked: false
     };
 
-    await usersCollection.insertOne(superAdmin);
+    await usersCollection.updateOne(
+      { email: adminEmail },
+      { $set: superAdmin },
+      { upsert: true }
+    );
     
     console.log("✅ Successfully seeded Super Admin user!");
     console.log("-----------------------------------------");
