@@ -122,7 +122,7 @@ const PrintSingleVendor = () => {
         <button className="btn" style={{ background: "white", border: "1px solid #cbd5e1", color: "#475569", fontWeight: 600 }} onClick={() => navigate(-1)}>
           <ArrowLeft size={18} className="mr-2" /> Back
         </button>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+        <div className="top-actions-container">
           <input 
             type="text" 
             value={signName} 
@@ -267,10 +267,17 @@ const PrintSingleVendor = () => {
                     </div>
                   </div>
                   
-                  <div style={{ textAlign: "center", width: "200px" }}>
-                    <div style={{ fontFamily: "'Dancing Script', cursive", fontSize: "2rem", color: "#0f172a", height: "40px", display: "flex", alignItems: "flex-end", justifyContent: "center", marginBottom: "5px" }}>
-                      {signName}
-                    </div>
+                  <div style={{ textAlign: "center", width: "250px" }}>
+                    {(user?.role === 'Admin' || user?.role === 'SuperAdmin') ? (
+                      <div style={{ fontFamily: "'Dancing Script', cursive", fontSize: "2rem", color: "#0f172a", height: "40px", display: "flex", alignItems: "flex-end", justifyContent: "center", marginBottom: "5px" }}>
+                        {signName}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: "0.85rem", color: "#0f172a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "40px", marginBottom: "5px", fontWeight: "600" }}>
+                        <span>Digitally signed by Dharmendra Puri</span>
+                        <span>Prime Roadways</span>
+                      </div>
+                    )}
                     <div style={{ borderTop: "1px solid #94a3b8", paddingTop: "5px", fontSize: "0.9rem", fontWeight: "600", color: "#475569" }}>
                       AUTHORIZED SIGNATURE
                     </div>

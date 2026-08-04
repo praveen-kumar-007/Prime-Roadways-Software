@@ -294,8 +294,8 @@ const TripMIS = () => {
       <div className="no-print">
         <div className="header-flex" style={{ marginBottom: "1.5rem" }}>
           <h3 style={{ fontSize: "1.5rem", color: "#111827", margin: 0 }}>Trip MIS Entries</h3>
-          <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-            <div style={{ display: "flex", gap: "5px", alignItems: "center", background: "white", padding: "4px 8px", borderRadius: "8px", border: "1px solid #cbd5e1" }}>
+          <div className="top-actions-container">
+            <div className="date-filter-group" style={{ display: "flex", gap: "5px", alignItems: "center", background: "white", padding: "4px 8px", borderRadius: "8px", border: "1px solid #cbd5e1" }}>
               <Filter size={16} color="#64748b" />
               <input type="date" className="form-control" style={{ border: "none", height: "30px", padding: "0 5px", fontSize: "0.8rem", width: "115px" }} value={startDate} onChange={e => setStartDate(e.target.value)} />
               <span style={{ color: "#94a3b8" }}>-</span>
@@ -332,19 +332,19 @@ const TripMIS = () => {
           </div>
         </div>
 
-        <div className="no-print" style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '300px', position: 'relative' }}>
+        <div className="no-print search-freight-container">
+          <div className="search-wrapper">
             <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
             <input
               type="text"
               className="form-control"
               placeholder="Search by client, trip no, vehicle, LR no, origin, destination..."
-              style={{ paddingLeft: '40px', height: '45px', border: '1px solid #cbd5e1', borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+              style={{ paddingLeft: '40px', height: '45px', border: '1px solid #cbd5e1', borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', width: '100%' }}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
-          <div style={{ background: '#ecfdf5', border: '1px solid #10b981', color: '#047857', padding: '0 1.5rem', borderRadius: '8px', height: '45px', display: 'flex', alignItems: 'center', fontWeight: 600, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', whiteSpace: 'nowrap' }}>
+          <div className="freight-box">
             Total Freight: &nbsp;<RupeeIcon size={14} /> {totalFreight.toFixed(2)}
           </div>
         </div>
@@ -875,26 +875,6 @@ const TripMIS = () => {
                             title="Print Single Trip"
                           >
                             <Printer size={14} /> Print
-                          </button>
-                          <button
-                            onClick={() => handleShareWhatsApp(item)}
-                            className="action-btn"
-                            style={{
-                              background: "#25D366",
-                              color: "#ffffff",
-                              border: "none",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "4px",
-                              fontWeight: "600",
-                              boxShadow: "0 2px 4px rgba(37, 211, 102, 0.2)"
-                            }}
-                            title="Share on WhatsApp"
-                          >
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-                              <path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.124.551 4.195 1.597 6.015L.175 23.518l5.62-1.474c1.745.955 3.693 1.458 5.679 1.458 6.646 0 12.031-5.385 12.031-12.031S18.677 0 12.031 0zm6.541 17.382c-.279.791-1.637 1.478-2.28 1.558-.551.069-1.258.199-3.95-1.025-3.447-1.564-5.69-5.111-5.859-5.337-.179-.229-1.401-1.865-1.401-3.565 0-1.7 1.054-2.584 1.343-2.912.288-.328.627-.408.835-.408.209 0 .418 0 .597.01.199.01.467-.069.736.567.279.646.955 2.337 1.044 2.506.089.179.149.388.04.597-.109.209-.169.348-.338.547-.169.199-.358.418-.507.577-.169.179-.348.378-.149.716.199.338.885 1.452 1.89 2.347 1.293 1.154 2.367 1.512 2.695 1.671.328.159.527.129.726-.089.199-.219.865-1.004 1.104-1.353.239-.348.477-.288.785-.169.308.119 1.949.925 2.288 1.094.338.169.567.259.656.408.089.149.089.865-.19 1.656z" />
-                            </svg>
-                            <span>Share</span>
                           </button>
                         </>
                       )}

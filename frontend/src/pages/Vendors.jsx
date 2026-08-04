@@ -323,7 +323,7 @@ const Vendors = () => {
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
+        <div className="top-actions-container">
           <button
             type="button"
             onClick={handleSampleCSV}

@@ -229,8 +229,8 @@ const VendorMIS = () => {
       <div className="no-print">
         <div className="header-flex" style={{ marginBottom: "1.5rem" }}>
           <h3 style={{ fontSize: "1.5rem", color: "#111827", margin: 0 }}>Vendor Vehicle MIS</h3>
-          <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-            <div style={{ display: "flex", gap: "5px", alignItems: "center", background: "white", padding: "4px 8px", borderRadius: "8px", border: "1px solid #cbd5e1" }}>
+          <div className="top-actions-container">
+            <div className="date-filter-group" style={{ display: "flex", gap: "5px", alignItems: "center", background: "white", padding: "4px 8px", borderRadius: "8px", border: "1px solid #cbd5e1" }}>
               <Filter size={16} color="#64748b" />
               <input type="date" className="form-control" style={{ border: "none", height: "30px", padding: "0 5px", fontSize: "0.8rem", width: "115px" }} value={startDate} onChange={e => setStartDate(e.target.value)} />
               <span style={{ color: "#94a3b8" }}>-</span>
@@ -264,8 +264,8 @@ const VendorMIS = () => {
           </div>
         </div>
 
-        <div className="no-print" style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '300px', position: 'relative' }}>
+        <div className="no-print search-freight-container">
+          <div className="search-wrapper">
             <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
             <input
               type="text"
@@ -276,7 +276,7 @@ const VendorMIS = () => {
               onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
-          <div style={{ background: '#ecfdf5', border: '1px solid #10b981', color: '#047857', padding: '0 1.5rem', borderRadius: '8px', height: '45px', display: 'flex', alignItems: 'center', fontWeight: 600, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', whiteSpace: 'nowrap' }}>
+          <div className="freight-box">
             Total Amount: &nbsp;<RupeeIcon size={14} /> {totalReceivable.toFixed(2)}
           </div>
         </div>
