@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { initMongo } = require('./src/config/database');
+const { initMongo, getDb } = require('./src/config/database');
 
 const { login, getMe } = require('./src/controllers/authController');
 const { getAllUsers, createUser, updateUser, deleteUser } = require('./src/controllers/usersController');
@@ -11,6 +11,7 @@ const { getVendorMis, createVendorMis, updateVendorMis, deleteVendorMis, addVend
 const { getDashboardStats } = require('./src/controllers/dashboardController');
 const { getClients, createClient, updateClient, deleteClient, deleteAllClients } = require('./src/controllers/clientsController');
 const { getVendors, createVendor, updateVendor, deleteVendor, deleteAllVendors } = require('./src/controllers/vendorsController');
+const { getTrash, restoreTrash, forceDeleteTrash, clearTrash } = require('./src/controllers/trashController');
 const { authenticateToken, requireAdmin } = require('./src/middleware/auth');
 
 const app = express();
@@ -108,6 +109,12 @@ app.put('/api/vendor-mis/:id', authenticateToken, updateVendorMis);
 app.post('/api/vendor-mis/:id/remarks', authenticateToken, addVendorMisRemark);
 app.delete('/api/vendor-mis/:id', authenticateToken, deleteVendorMis);
 
+// Trash (SuperAdmin/Admin only)
+app.get('/api/trash', authenticateToken, requireAdmin, getTrash);
+app.post('/api/trash/restore/:id', authenticateToken, requireAdmin, restoreTrash);
+app.delete('/api/trash/force/:id', authenticateToken, requireAdmin, forceDeleteTrash);
+app.delete('/api/trash/clear', authenticateToken, requireAdmin, clearTrash);
+
 // Keep-alive self-ping to bypass free-tier inactivity sleep
 const RENDER_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}/api/health`;
 setInterval(() => {
@@ -122,6 +129,21 @@ setInterval(() => {
     console.error(`[Keep-Alive] Self-ping error: ${err.message}`);
   });
 }, 14 * 60 * 1000); // Every 14 minutes
+
+// Daily cleanup of expired trash items
+setInterval(async () => {
+  try {
+    const db = getDb();
+    if (db) {
+      const result = await db.collection('trash').deleteMany({ expiresAt: { $lt: new Date() } });
+      if (result.deletedCount > 0) {
+        console.log(`[Trash Cleanup] Removed ${result.deletedCount} expired items.`);
+      }
+    }
+  } catch (err) {
+    console.error(`[Trash Cleanup Error]: ${err.message}`);
+  }
+}, 24 * 60 * 60 * 1000); // Every 24 hours
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

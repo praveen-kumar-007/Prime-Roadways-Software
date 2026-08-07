@@ -27,7 +27,8 @@ import {
   Search,
   ChevronDown,
   ChevronRight,
-  Layers
+  Layers,
+  Trash2
 } from "lucide-react";
 
 export const menuItems = [
@@ -65,6 +66,12 @@ export const menuItems = [
     name: "IAM",
     path: "/dashboard/iam",
     icon: <Shield size={20} />,
+    permission: "superadmin"
+  },
+  {
+    name: "Trash",
+    path: "/dashboard/trash",
+    icon: <Trash2 size={20} />,
     permission: "superadmin"
   }
 ];

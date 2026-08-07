@@ -122,17 +122,27 @@ exports.deleteTripMis = async (req, res) => {
     const { id } = req.params;
     const user = req.user;
     
-    const doc = await getDb().collection('trip_mis').findOne({ _id: new ObjectId(id) });
-    if (!doc) return res.status(404).json({ success: false, message: 'Not found' });
-    
     const isAdmin = user.role === 'Admin' || user.role === 'SuperAdmin';
     if (user.role === 'Client' || user.role?.toLowerCase() === 'client') {
       return res.status(403).json({ success: false, message: 'Clients are not authorized to delete entries.' });
     }
+    
+    const doc = await getDb().collection('trip_mis').findOne({ _id: new ObjectId(id) });
+    if (!doc) {
+      return res.status(404).json({ success: false, message: 'Trip MIS record not found' });
+    }
+
     if (!isAdmin && doc.createdBy !== user.id) {
       return res.status(403).json({ success: false, message: 'Unauthorized to delete this entry.' });
     }
-    
+
+    await getDb().collection('trash').insertOne({
+      originalCollection: 'trip_mis',
+      document: doc,
+      deletedAt: new Date(),
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    });
+
     await getDb().collection('trip_mis').deleteOne({ _id: new ObjectId(id) });
     
     return res.status(200).json({ success: true, message: 'Trip MIS deleted successfully' });

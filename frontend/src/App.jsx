@@ -11,6 +11,7 @@ import Clients from './pages/Clients';
 import Vendors from './pages/Vendors';
 import PrintSingleTrip from './pages/PrintSingleTrip';
 import PrintSingleVendor from './pages/PrintSingleVendor';
+import Trash from './pages/Trash';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { SettingsProvider } from './context/SettingsContext';
@@ -48,6 +49,7 @@ function App() {
                     <Route path="vendors" element={<Vendors />} />
                     <Route path="clients" element={<Clients />} />
                     <Route path="iam" element={<IAM />} />
+                    <Route path="trash" element={<Trash />} />
                   </Route>
                   <Route path="/print-single-trip/:index" element={<ProtectedRoute><PrintSingleTrip /></ProtectedRoute>} />
                   <Route path="/print-single-vendor/:index" element={<ProtectedRoute><PrintSingleVendor /></ProtectedRoute>} />

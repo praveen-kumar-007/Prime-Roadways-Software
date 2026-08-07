@@ -173,7 +173,8 @@ const Vendors = () => {
       title: "Delete All Vendors",
       message: "Are you absolutely sure you want to delete ALL vendors? This action is irreversible and all vendor data will be permanently wiped.",
       confirmText: "Yes, Delete All",
-      cancelText: "Cancel"
+      cancelText: "Cancel",
+      requireInput: "confirm"
     });
     if (!isConfirmed) return;
 

@@ -99,11 +99,17 @@ exports.deleteVendor = async (req, res) => {
   try {
     const { id } = req.params;
     const query = { $or: [{ _id: getQueryId(id) }, { id: id }] };
-
     const doc = await getDb().collection('vendors').findOne(query);
     if (!doc) {
-      return res.status(404).json({ success: false, message: 'Vendor not found' });
+      return res.status(404).json({ success: false, error: 'Vendor not found' });
     }
+
+    await getDb().collection('trash').insertOne({
+      originalCollection: 'vendors',
+      document: doc,
+      deletedAt: new Date(),
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    });
 
     await getDb().collection('vendors').deleteOne(query);
 
@@ -116,8 +122,19 @@ exports.deleteVendor = async (req, res) => {
 
 exports.deleteAllVendors = async (req, res) => {
   try {
+    const vendors = await getDb().collection('vendors').find({}).toArray();
+    if (vendors.length > 0) {
+      const trashDocs = vendors.map(doc => ({
+        originalCollection: 'vendors',
+        document: doc,
+        deletedAt: new Date(),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      }));
+      await getDb().collection('trash').insertMany(trashDocs);
+    }
+    
     await getDb().collection('vendors').deleteMany({});
-    return res.status(200).json({ success: true, message: 'All vendors deleted successfully' });
+    res.status(200).json({ success: true, message: 'All vendors moved to Trash' });
   } catch (error) {
     console.error('Error deleting all vendors:', error);
     return res.status(500).json({ success: false, message: 'Server error deleting all vendors' });

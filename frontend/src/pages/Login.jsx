@@ -53,7 +53,22 @@ const Login = () => {
     return () => clearInterval(interval);
   }, [resendTimer, view]);
 
-  const { login } = useContext(AuthContext);
+  const { login, user, hasPermission } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (user) {
+      if (hasPermission('dashboard') || user.role === 'SuperAdmin') {
+        navigate('/dashboard');
+      } else if (hasPermission('tripmis') || user.role === 'Client' || user.role === 'Vendor') {
+        navigate('/dashboard/trip-mis');
+      } else if (hasPermission('vendormis')) {
+        navigate('/dashboard/vendor-mis');
+      } else {
+        // Fallback if no specific page, just go to dashboard which might be empty
+        navigate('/dashboard');
+      }
+    }
+  }, [user, navigate, hasPermission]);
 
   const API_URL = API_BASE_URL;
 
@@ -137,7 +152,7 @@ const Login = () => {
 
       if (response.data.success) {
         login(response.data.data.user, response.data.data.token);
-        navigate('/dashboard');
+        // The useEffect above will handle the navigation automatically once user state updates!
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Server error. Please try again.');

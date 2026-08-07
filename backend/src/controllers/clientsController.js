@@ -99,11 +99,17 @@ exports.deleteClient = async (req, res) => {
   try {
     const { id } = req.params;
     const query = { $or: [{ _id: getQueryId(id) }, { id: id }] };
-
     const doc = await getDb().collection('clients').findOne(query);
     if (!doc) {
-      return res.status(404).json({ success: false, message: 'Client not found' });
+      return res.status(404).json({ success: false, error: 'Client not found' });
     }
+
+    await getDb().collection('trash').insertOne({
+      originalCollection: 'clients',
+      document: doc,
+      deletedAt: new Date(),
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    });
 
     await getDb().collection('clients').deleteOne(query);
 
@@ -116,8 +122,19 @@ exports.deleteClient = async (req, res) => {
 
 exports.deleteAllClients = async (req, res) => {
   try {
+    const clients = await getDb().collection('clients').find({}).toArray();
+    if (clients.length > 0) {
+      const trashDocs = clients.map(doc => ({
+        originalCollection: 'clients',
+        document: doc,
+        deletedAt: new Date(),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      }));
+      await getDb().collection('trash').insertMany(trashDocs);
+    }
+    
     await getDb().collection('clients').deleteMany({});
-    return res.status(200).json({ success: true, message: 'All clients deleted successfully' });
+    res.status(200).json({ success: true, message: 'All clients moved to Trash' });
   } catch (error) {
     console.error('Error deleting all clients:', error);
     return res.status(500).json({ success: false, message: 'Server error deleting all clients' });

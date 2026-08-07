@@ -98,8 +98,17 @@ exports.deleteVendorMis = async (req, res) => {
     const user = req.user;
     
     const doc = await getDb().collection('vendor_mis').findOne({ _id: new ObjectId(id) });
-    if (!doc) return res.status(404).json({ success: false, message: 'Not found' });
-    
+    if (!doc) {
+      return res.status(404).json({ success: false, message: 'Vendor MIS record not found' });
+    }
+
+    await getDb().collection('trash').insertOne({
+      originalCollection: 'vendor_mis',
+      document: doc,
+      deletedAt: new Date(),
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    });
+
     const isAdmin = user.role === 'Admin' || user.role === 'SuperAdmin';
 
     if (!isAdmin && doc.createdBy !== user.id) {
