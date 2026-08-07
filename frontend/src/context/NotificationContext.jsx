@@ -6,7 +6,7 @@ import { API_URL } from '../config/api';
 export const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const [incompleteItems, setIncompleteItems] = useState([]);
   const [totalIncomplete, setTotalIncomplete] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -14,11 +14,13 @@ export const NotificationProvider = ({ children }) => {
 
 
   const fetchIncompleteItems = async () => {
-    if (!user) return; // Wait for user to be logged in
+    if (!user || !token) return; // Wait for user to be logged in
     
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/notifications/incomplete`);
+      const res = await axios.get(`${API_URL}/notifications/incomplete`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (res.data.success) {
         setIncompleteItems(res.data.data.items || []);
         setTotalIncomplete(res.data.data.total || 0);
