@@ -1,6 +1,15 @@
 const { getDb } = require('../config/database');
 const { ObjectId } = require('mongodb');
 
+const getClientShortForm = (clientName) => {
+  if (!clientName) return "PR";
+  const clean = clientName.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (clean.length >= 4) {
+    return clean.substring(0, 4);
+  }
+  return clean.padEnd(4, 'X');
+};
+
 exports.getTripMis = async (req, res) => {
   try {
     const user = req.user;
@@ -55,8 +64,24 @@ exports.createTripMis = async (req, res) => {
     payload.approvalStatus = isAdmin ? 'Approved' : 'Pending';
 
     if (!payload.tripNo || payload.tripNo.startsWith('TRP-')) {
-      const count = await getDb().collection('trip_mis').countDocuments();
-      payload.tripNo = `PR-${1000 + count + 1}`;
+      const clientName = payload.clientName || 'PR';
+      const clientPrefix = getClientShortForm(clientName);
+      
+      const trips = await getDb().collection('trip_mis').find({
+        tripNo: new RegExp('^' + clientPrefix, 'i')
+      }).toArray();
+      
+      let maxNum = 0;
+      trips.forEach(t => {
+        const tripNo = t.tripNo || '';
+        const match = tripNo.substring(clientPrefix.length).match(/[- ]?(\d+)/);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (num > maxNum) maxNum = num;
+        }
+      });
+      const nextNum = maxNum + 1;
+      payload.tripNo = `${clientPrefix} ${String(nextNum).padStart(4, '0')}`;
     }
 
     const result = await getDb().collection('trip_mis').insertOne(payload);

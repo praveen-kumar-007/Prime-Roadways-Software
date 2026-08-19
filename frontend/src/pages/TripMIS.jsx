@@ -10,6 +10,31 @@ import { useToast } from "../context/ToastContext";
 import { AuthContext } from "../context/AuthContext";
 import { API_URL as API } from "../config/api";
 
+const getClientShortForm = (clientName) => {
+  if (!clientName) return "PR";
+  const clean = clientName.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (clean.length >= 4) {
+    return clean.substring(0, 4);
+  }
+  return clean.padEnd(4, 'X');
+};
+
+const getNextTripNo = (clientName, entries) => {
+  const prefix = getClientShortForm(clientName);
+  let maxNum = 0;
+  (entries || []).forEach(t => {
+    const tNo = t.tripNo || '';
+    if (tNo.startsWith(prefix)) {
+      const match = tNo.substring(prefix.length).match(/[- ]?(\d+)/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxNum) maxNum = num;
+      }
+    }
+  });
+  return `${prefix} ${String(maxNum + 1).padStart(4, '0')}`;
+};
+
 const TripMIS = () => {
   const { addToast } = useToast();
   const { token, user } = useContext(AuthContext);
@@ -433,7 +458,7 @@ const TripMIS = () => {
             <div className="grid-3-col" style={{ padding: "1.5rem", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0", marginBottom: "2rem" }}>
               <div className="form-group">
                 <label className="form-label" style={{ fontWeight: "500", color: "#374151" }}>Trip Number<span style={{ color: "#ef4444", marginLeft: "2px" }}>*</span></label>
-                <input type="text" className="form-control" placeholder="Auto-generated (e.g. PR-1001)" value={tripListForm.tripNo} disabled />
+                <input type="text" className="form-control" placeholder="Auto-generated (e.g. NOKA 0001)" value={tripListForm.tripNo} disabled />
               </div>
               <div className="form-group">
                 <label className="form-label" style={{ fontWeight: "500", color: "#374151" }}>Trip Origin (From)<span style={{ color: "#ef4444", marginLeft: "2px" }}>*</span></label>
@@ -461,7 +486,9 @@ const TripMIS = () => {
                     if (e.target.value === "__NEW__") {
                       setShowQuickAddClient(true);
                     } else {
-                      setTripListForm({ ...tripListForm, clientName: e.target.value });
+                      const clientVal = e.target.value;
+                      const nextTripNo = editingId ? tripListForm.tripNo : getNextTripNo(clientVal, tripListEntries);
+                      setTripListForm({ ...tripListForm, clientName: clientVal, tripNo: nextTripNo });
                     }
                   }}
                   required
@@ -1382,7 +1409,10 @@ const TripMIS = () => {
                     if (res.data.success) {
                       const addedClient = res.data.data;
                       setClientsList(prev => [addedClient, ...prev]);
-                      setTripListForm(prev => ({ ...prev, clientName: addedClient.name }));
+                      setTripListForm(prev => {
+                        const nextTripNo = editingId ? prev.tripNo : getNextTripNo(addedClient.name, tripListEntries);
+                        return { ...prev, clientName: addedClient.name, tripNo: nextTripNo };
+                      });
                       setShowQuickAddClient(false);
                       setNewClientName('');
                       addToast("Client added! Admin notified to complete missing data.", "success");
