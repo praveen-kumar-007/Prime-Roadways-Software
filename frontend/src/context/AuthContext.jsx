@@ -49,11 +49,6 @@ export const AuthProvider = ({ children }) => {
     }
     
     const perms = user.permissions || [];
-    if (user.role === 'Client' || user.role === 'Vendor') {
-      if (permission === 'tripmis' && (perms.includes('trips') || perms.includes('tripmis') || perms.includes('vendormis'))) {
-        return true;
-      }
-    }
     return perms.includes('all') || perms.includes(permission);
   };
 

@@ -59,7 +59,7 @@ const Login = () => {
     if (user) {
       if (hasPermission('dashboard') || user.role === 'SuperAdmin') {
         navigate('/dashboard');
-      } else if (hasPermission('tripmis') || user.role === 'Client' || user.role === 'Vendor') {
+      } else if (hasPermission('tripmis')) {
         navigate('/dashboard/trip-mis');
       } else if (hasPermission('vendormis')) {
         navigate('/dashboard/vendor-mis');
