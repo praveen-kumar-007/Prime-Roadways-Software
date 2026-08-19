@@ -13,6 +13,7 @@ const PrintSingleTrip = () => {
   const [signName, setSignName] = useState(user?.name || "Admin");
   const [scale, setScale] = useState(1);
   const [trip, setTrip] = useState(null);
+  const [showPrintAmounts, setShowPrintAmounts] = useState(false);
 
   useEffect(() => {
     if (index === 'mis-print') {
@@ -88,7 +89,7 @@ const PrintSingleTrip = () => {
 
   if (!trip) return <div style={{ padding: "2rem", textAlign: "center" }}><h3>Trip not found.</h3><button className="btn btn-primary mt-3" onClick={() => navigate(-1)}>Go Back</button></div>;
 
-  const baseFreight = parseFloat(trip?.freight || trip?.parcels?.reduce((s,p)=>s+(parseFloat(p.freight)||0),0)) || 0;
+  const baseFreight = parseFloat(trip?.freight || trip?.parcels?.reduce((s,p)=>s+(parseFloat(p.freight)||0)+(parseFloat(p.pickup)||0)+(parseFloat(p.delivery)||0)+(parseFloat(p.special)||0)+(parseFloat(p.other)||0)+(parseFloat(p.parking)||0)+(parseFloat(p.labor)||0),0)) || 0;
   const gstAmount = baseFreight * 0.18;
   const grandTotal = baseFreight + gstAmount;
   const amountPaid = parseFloat(trip?.paidAmount || 0);
@@ -143,6 +144,15 @@ const PrintSingleTrip = () => {
               cursor: (user?.role === 'Admin' || user?.role === 'SuperAdmin') ? "text" : "not-allowed"
             }} 
           />
+          <select 
+            className="form-control" 
+            style={{ border: "1.5px solid #64748b", height: "35px", fontSize: "0.85rem", width: "150px", padding: "0 5px", background: "white", borderRadius: "6px", outline: "none" }}
+            value={showPrintAmounts ? "SHOW" : "HIDE"}
+            onChange={e => setShowPrintAmounts(e.target.value === "SHOW")}
+          >
+            <option value="SHOW">Show Amounts</option>
+            <option value="HIDE">Hide (XXXX)</option>
+          </select>
           <button className="btn" style={{ background: "white", border: "1px solid #cbd5e1" }} onClick={() => window.print()}>
             <Printer size={18} className="mr-2" /> Print Page
           </button>
@@ -240,10 +250,12 @@ const PrintSingleTrip = () => {
                                 <th style={{ padding: "6px 4px", whiteSpace: "nowrap" }}>MODE</th>
                                 <th style={{ textAlign: "center", padding: "6px 4px", whiteSpace: "nowrap" }}>BOX</th>
                                 <th style={{ textAlign: "center", padding: "6px 4px", whiteSpace: "nowrap" }}>WT</th>
-                                <th style={{ textAlign: "right", padding: "6px 4px", whiteSpace: "nowrap" }}>FRT</th>
+                                <th style={{ textAlign: "right", padding: "6px 4px", whiteSpace: "nowrap" }}>FREIGHT</th>
                                 <th style={{ textAlign: "right", padding: "6px 4px", whiteSpace: "nowrap" }}>PICK</th>
-                                <th style={{ textAlign: "right", padding: "6px 4px", whiteSpace: "nowrap" }}>DELV</th>
-                                <th style={{ textAlign: "right", padding: "6px 4px", whiteSpace: "nowrap" }}>SPEC</th>
+                                <th style={{ textAlign: "right", padding: "6px 4px", whiteSpace: "nowrap" }}>DLY</th>
+                                <th style={{ textAlign: "right", padding: "6px 4px", whiteSpace: "nowrap" }}>SPL</th>
+                                <th style={{ textAlign: "right", padding: "6px 4px", whiteSpace: "nowrap" }}>PARKING</th>
+                                <th style={{ textAlign: "right", padding: "6px 4px", whiteSpace: "nowrap" }}>LABOUR</th>
                                 <th style={{ textAlign: "right", padding: "6px 4px", whiteSpace: "nowrap" }}>OTH</th>
                                 <th style={{ textAlign: "right", padding: "6px 4px", whiteSpace: "nowrap" }}>TOTAL</th>
                             </tr>
@@ -260,34 +272,38 @@ const PrintSingleTrip = () => {
                                         <td className="data-cell" style={{ padding: "4px", whiteSpace: "nowrap" }}>{(p.mode || "-").toUpperCase()}</td>
                                         <td className="data-cell" style={{ textAlign: "center", padding: "4px", whiteSpace: "nowrap" }}>{p.box || "-"}</td>
                                         <td className="data-cell" style={{ textAlign: "center", padding: "4px", whiteSpace: "nowrap" }}>{p.weight || "-"}</td>
-                                        <td className="data-cell" style={{ textAlign: "right", padding: "4px", whiteSpace: "nowrap" }}>{parseFloat(p.freight || 0).toFixed(2)}</td>
-                                        <td className="data-cell" style={{ textAlign: "right", padding: "4px", whiteSpace: "nowrap" }}>{parseFloat(p.pickup || 0).toFixed(2)}</td>
-                                        <td className="data-cell" style={{ textAlign: "right", padding: "4px", whiteSpace: "nowrap" }}>{parseFloat(p.delivery || 0).toFixed(2)}</td>
-                                        <td className="data-cell" style={{ textAlign: "right", padding: "4px", whiteSpace: "nowrap" }}>{parseFloat(p.special || 0).toFixed(2)}</td>
-                                        <td className="data-cell" style={{ textAlign: "right", padding: "4px", whiteSpace: "nowrap" }}>{parseFloat(p.other || 0).toFixed(2)}</td>
+                                        <td className="data-cell" style={{ textAlign: "right", padding: "4px", whiteSpace: "nowrap" }}>{showPrintAmounts ? parseFloat(p.freight || 0).toFixed(2) : "0"}</td>
+                                        <td className="data-cell" style={{ textAlign: "right", padding: "4px", whiteSpace: "nowrap" }}>{showPrintAmounts ? parseFloat(p.pickup || 0).toFixed(2) : "0"}</td>
+                                        <td className="data-cell" style={{ textAlign: "right", padding: "4px", whiteSpace: "nowrap" }}>{showPrintAmounts ? parseFloat(p.delivery || 0).toFixed(2) : "0"}</td>
+                                        <td className="data-cell" style={{ textAlign: "right", padding: "4px", whiteSpace: "nowrap" }}>{showPrintAmounts ? parseFloat(p.special || 0).toFixed(2) : "0"}</td>
+                                        <td className="data-cell" style={{ textAlign: "right", padding: "4px", whiteSpace: "nowrap" }}>{showPrintAmounts ? parseFloat(p.parking || 0).toFixed(2) : "0"}</td>
+                                        <td className="data-cell" style={{ textAlign: "right", padding: "4px", whiteSpace: "nowrap" }}>{showPrintAmounts ? parseFloat(p.labor || 0).toFixed(2) : "0"}</td>
+                                        <td className="data-cell" style={{ textAlign: "right", padding: "4px", whiteSpace: "nowrap" }}>{showPrintAmounts ? parseFloat(p.other || 0).toFixed(2) : "0"}</td>
                                         <td className="data-cell" style={{ textAlign: "right", fontWeight: "700", padding: "4px", whiteSpace: "nowrap" }}>
-                                            {((parseFloat(p.freight) || 0) + (parseFloat(p.pickup) || 0) + (parseFloat(p.delivery) || 0) + (parseFloat(p.special) || 0) + (parseFloat(p.other) || 0)).toFixed(2)}
+                                            {showPrintAmounts ? ((parseFloat(p.freight) || 0) + (parseFloat(p.pickup) || 0) + (parseFloat(p.delivery) || 0) + (parseFloat(p.special) || 0) + (parseFloat(p.parking) || 0) + (parseFloat(p.labor) || 0) + (parseFloat(p.other) || 0)).toFixed(2) : "0"}
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="14" style={{ textAlign: "center", padding: "10px" }} className="data-cell">No parcels available.</td>
+                                    <td colSpan="16" style={{ textAlign: "center", padding: "10px" }} className="data-cell">No parcels available.</td>
                                 </tr>
                             )}
                         </tbody>
                         <tfoot>
                             <tr className="gray-cell" style={{ backgroundColor: "#e2e8f0", fontSize: "0.7rem" }}>
                                 <td colSpan="6" style={{ textAlign: "right", fontWeight: "700", color: "#0f172a", padding: "6px 4px", whiteSpace: "nowrap" }}>TOTAL:</td>
-                                <td className="data-cell" style={{ textAlign: "center", fontWeight: "700", padding: "6px 4px", whiteSpace: "nowrap" }}>{trip.box || trip.parcels?.reduce((s,p)=>s+(parseInt(p.box)||0),0)}</td>
-                                <td className="data-cell" style={{ textAlign: "center", fontWeight: "700", padding: "6px 4px", whiteSpace: "nowrap" }}>{trip.weight || trip.parcels?.reduce((s,p)=>s+(parseFloat(p.weight)||0),0)}</td>
-                                <td className="data-cell" style={{ textAlign: "right", fontWeight: "700", padding: "6px 4px", whiteSpace: "nowrap" }}>{trip.parcels?.reduce((s,p)=>s+(parseFloat(p.freight)||0),0).toFixed(2)}</td>
-                                <td className="data-cell" style={{ textAlign: "right", fontWeight: "700", padding: "6px 4px", whiteSpace: "nowrap" }}>{trip.parcels?.reduce((s,p)=>s+(parseFloat(p.pickup)||0),0).toFixed(2)}</td>
-                                <td className="data-cell" style={{ textAlign: "right", fontWeight: "700", padding: "6px 4px", whiteSpace: "nowrap" }}>{trip.parcels?.reduce((s,p)=>s+(parseFloat(p.delivery)||0),0).toFixed(2)}</td>
-                                <td className="data-cell" style={{ textAlign: "right", fontWeight: "700", padding: "6px 4px", whiteSpace: "nowrap" }}>{trip.parcels?.reduce((s,p)=>s+(parseFloat(p.special)||0),0).toFixed(2)}</td>
-                                <td className="data-cell" style={{ textAlign: "right", fontWeight: "700", padding: "6px 4px", whiteSpace: "nowrap" }}>{trip.parcels?.reduce((s,p)=>s+(parseFloat(p.other)||0),0).toFixed(2)}</td>
+                                <td className="data-cell" style={{ textAlign: "center", fontWeight: "700", padding: "6px 4px", whiteSpace: "nowrap" }}>{trip.box || (trip.parcels?.reduce((s,p)=>s+(parseInt(p.box)||0),0) || 0)}</td>
+                                <td className="data-cell" style={{ textAlign: "center", fontWeight: "700", padding: "6px 4px", whiteSpace: "nowrap" }}>{trip.weight || (trip.parcels?.reduce((s,p)=>s+(parseFloat(p.weight)||0),0) || 0)}</td>
+                                <td className="data-cell" style={{ textAlign: "right", fontWeight: "700", padding: "6px 4px", whiteSpace: "nowrap" }}>{showPrintAmounts ? (trip.parcels?.reduce((s,p)=>s+(parseFloat(p.freight)||0),0) || 0).toFixed(2) : "0"}</td>
+                                <td className="data-cell" style={{ textAlign: "right", fontWeight: "700", padding: "6px 4px", whiteSpace: "nowrap" }}>{showPrintAmounts ? (trip.parcels?.reduce((s,p)=>s+(parseFloat(p.pickup)||0),0) || 0).toFixed(2) : "0"}</td>
+                                <td className="data-cell" style={{ textAlign: "right", fontWeight: "700", padding: "6px 4px", whiteSpace: "nowrap" }}>{showPrintAmounts ? (trip.parcels?.reduce((s,p)=>s+(parseFloat(p.delivery)||0),0) || 0).toFixed(2) : "0"}</td>
+                                <td className="data-cell" style={{ textAlign: "right", fontWeight: "700", padding: "6px 4px", whiteSpace: "nowrap" }}>{showPrintAmounts ? (trip.parcels?.reduce((s,p)=>s+(parseFloat(p.special)||0),0) || 0).toFixed(2) : "0"}</td>
+                                <td className="data-cell" style={{ textAlign: "right", fontWeight: "700", padding: "6px 4px", whiteSpace: "nowrap" }}>{showPrintAmounts ? (trip.parcels?.reduce((s,p)=>s+(parseFloat(p.parking)||0),0) || 0).toFixed(2) : "0"}</td>
+                                <td className="data-cell" style={{ textAlign: "right", fontWeight: "700", padding: "6px 4px", whiteSpace: "nowrap" }}>{showPrintAmounts ? (trip.parcels?.reduce((s,p)=>s+(parseFloat(p.labor)||0),0) || 0).toFixed(2) : "0"}</td>
+                                <td className="data-cell" style={{ textAlign: "right", fontWeight: "700", padding: "6px 4px", whiteSpace: "nowrap" }}>{showPrintAmounts ? (trip.parcels?.reduce((s,p)=>s+(parseFloat(p.other)||0),0) || 0).toFixed(2) : "0"}</td>
                                 <td className="data-cell" style={{ textAlign: "right", fontWeight: "700", color: "#10b981", padding: "6px 4px", whiteSpace: "nowrap" }}>
-                                    Rs. {parseFloat(trip.freight || trip.parcels?.reduce((s,p)=>s+(parseFloat(p.freight)||0)+(parseFloat(p.pickup)||0)+(parseFloat(p.delivery)||0)+(parseFloat(p.special)||0)+(parseFloat(p.other)||0),0)).toFixed(2)}
+                                    {showPrintAmounts ? `Rs. ${baseFreight.toFixed(2)}` : "Rs. 0"}
                                 </td>
                             </tr>
                         </tfoot>
@@ -299,25 +315,25 @@ const PrintSingleTrip = () => {
                             <tr>
                                 <td className="gray-cell" style={{ width: "25%" }}>PAYMENT MODE</td>
                                 <td className="data-cell" style={{ width: "25%" }}>{(trip.payment || "-").toUpperCase()}</td>
-                                <td className="gray-cell" style={{ width: "25%" }}>FREIGHT (BASE)</td>
+                                <td className="gray-cell" style={{ width: "25%" }}>FREIGHT</td>
                                 <td className="data-cell" style={{ width: "25%" }}>
-                                    Rs. {baseFreight.toFixed(2)}
+                                    Rs. {showPrintAmounts ? baseFreight.toFixed(2) : "0"}
                                 </td>
                             </tr>
                             <tr>
                                 <td className="gray-cell">GST (18%)</td>
-                                <td className="data-cell">Rs. {gstAmount.toFixed(2)}</td>
+                                <td className="data-cell">Rs. {showPrintAmounts ? gstAmount.toFixed(2) : "0"}</td>
                                 <td className="gray-cell">GRAND TOTAL</td>
                                 <td className="data-cell" style={{ color: "#10b981", fontSize: "1.1rem" }}>
-                                    Rs. {grandTotal.toFixed(2)}
+                                    Rs. {showPrintAmounts ? grandTotal.toFixed(2) : "0"}
                                 </td>
                             </tr>
                             <tr>
                                 <td className="gray-cell">AMOUNT PAID</td>
-                                <td className="data-cell" style={{ color: "#f59e0b" }}>Rs. {amountPaid.toFixed(2)}</td>
+                                <td className="data-cell" style={{ color: "#f59e0b" }}>Rs. {showPrintAmounts ? amountPaid.toFixed(2) : "0"}</td>
                                 <td className="gray-cell">REMAINING AMOUNT</td>
                                 <td className="data-cell" style={{ color: "#ef4444" }}>
-                                    Rs. {remaining.toFixed(2)}
+                                    Rs. {showPrintAmounts ? remaining.toFixed(2) : "0"}
                                 </td>
                             </tr>
                         </tbody>
